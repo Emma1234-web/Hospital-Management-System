@@ -1,39 +1,74 @@
 import Patient from "../models/Patient.js";
-import { paginate } from "../utils/paginate.js";
 
+// Create new patient
 export const createPatient = async (req, res) => {
   try {
-    const p = await Patient.create({ ...req.body, createdBy: req.user._id });
-    res.status(201).json({ success: true, patient: p });
-  } catch (error) { res.status(500).json({ message: error.message }); }
+    const patient = await Patient.create(req.body);
+    res.status(201).json({ success: true, patient });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };
 
+// Get patients with pagination
 export const getPatients = async (req, res) => {
   try {
-    const { page = 1, limit = 10 } = req.query;
-    const result = await paginate(Patient, {}, Number(page), Number(limit));
-    res.json(result);
-  } catch (error) { res.status(500).json({ message: error.message }); }
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+
+    const skip = (page - 1) * limit;
+
+    const patients = await Patient.find()
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+
+    const total = await Patient.countDocuments();
+
+    res.json({
+      success: true,
+      total,
+      currentPage: page,
+      totalPages: Math.ceil(total / limit),
+      patients,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };
 
-export const getSinglePatient = async (req, res) => {
+// Get single patient
+export const getPatientById = async (req, res) => {
   try {
     const patient = await Patient.findById(req.params.id);
-    if (!patient) return res.status(404).json({ message: "Not found" });
+    if (!patient) return res.status(404).json({ message: "Patient not found" });
+
     res.json({ success: true, patient });
-  } catch (error) { res.status(500).json({ message: error.message }); }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };
 
+// Update
 export const updatePatient = async (req, res) => {
   try {
-    const updated = await Patient.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    res.json({ success: true, patient: updated });
-  } catch (error) { res.status(500).json({ message: error.message }); }
+    const patient = await Patient.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
+    res.json({ success: true, patient });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };
 
+// Delete
 export const deletePatient = async (req, res) => {
   try {
     await Patient.findByIdAndDelete(req.params.id);
-    res.json({ success: true, message: "Deleted" });
-  } catch (error) { res.status(500).json({ message: error.message }); }
+    res.json({ success: true, message: "Patient removed" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };
