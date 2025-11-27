@@ -1,3 +1,22 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@keyframes fadeIn {
+  from { opacity: 0; } to { opacity: 1; }
+}
+.animate-fadeIn { animation: fadeIn 0.8s ease-in-out; }
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; }
+}
+.animate-slideUp { animation: slideUp 0.8s ease-in-out; }
+
+.button { @apply px-4 py-2 rounded font-semibold transition transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2; }
+.button-primary { @apply bg-blue-500 text-white hover:bg-blue-600 focus:ring-blue-500; }
+.button-secondary { @apply bg-gray-500 text-white hover:bg-gray-600 focus:ring-gray-500; }
+.button-danger { @apply bg-red-500 text-white hover:bg-red-600 focus:ring-red-500; }
+
+.card { @apply bg-white p-6 rounded-lg shadow-lg transition transform hover:scale-105; }
+
+body { @apply bg-gray-100 font-sans; }
