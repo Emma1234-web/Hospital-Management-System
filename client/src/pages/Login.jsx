@@ -20,10 +20,23 @@ export default function Login() {
         password,
       });
 
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
+      const { token, user } = res.data;
 
-      navigate("/dashboard");
+      // Save login session
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
+
+      // Redirect based on role
+      if (user.role === "admin") {
+        navigate("/admin-dashboard");
+      } else if (user.role === "doctor") {
+        navigate("/doctor-dashboard");
+      } else if (user.role === "patient") {
+        navigate("/patient-dashboard");
+      } else {
+        navigate("/dashboard"); // default
+      }
+
     } catch (err) {
       setError(err.response?.data?.message || "Login failed");
     } finally {
@@ -44,8 +57,8 @@ export default function Login() {
           <div className="bg-red-100 text-red-700 p-3 rounded-md text-center mb-4">
             <p>{error}</p>
 
-            {/* If email not found → show Register button */}
-            {error.toLowerCase().includes("not") && (
+            {/* If user does not exist → show register button */}
+            {error.toLowerCase().includes("not found") && (
               <button
                 onClick={() => navigate("/register")}
                 className="mt-3 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
