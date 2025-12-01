@@ -1,15 +1,50 @@
- import User from "../models/User.js";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import Doctor from "../models/Doctor.js";
+import Patient from "../models/Patient.js";
 
-export const adminLogin = async (req, res) => {
+export const createDoctor = async (req, res) => {
   try {
-    const { email, password } = req.body;
-    const admin = await User.findOne({ email });
-    if (!admin || admin.role !== "admin") return res.status(400).json({ message: "Invalid credentials" });
-    const ok = await bcrypt.compare(password, admin.password);
-    if (!ok) return res.status(400).json({ message: "Invalid credentials" });
-    const token = jwt.sign({ id: admin._id, role: "admin" }, process.env.JWT_SECRET, { expiresIn: "7d" });
-    res.json({ token, admin: { id: admin._id, name: admin.name, email: admin.email } });
-  } catch (error) { res.status(500).json({ message: error.message }); }
+    const { name, email, specialization, phone, experience, password } = req.body;
+    const exists = await Doctor.findOne({ email });
+    if (exists) return res.status(400).json({ message: "Doctor email exists" });
+    const doctor = await Doctor.create({ name, email, specialization, phone, experience, password });
+    res.status(201).json({ success: true, doctor });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+};
+
+export const createPatient = async (req, res) => {
+  try {
+    const { name, email, age, gender, phone, address, password } = req.body;
+    const exists = await Patient.findOne({ email });
+    if (exists) return res.status(400).json({ message: "Patient email exists" });
+    const patient = await Patient.create({ name, email, age, gender, phone, address, password });
+    res.status(201).json({ success: true, patient });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+};
+
+export const getAllDoctors = async (req, res) => {
+  try {
+    const docs = await Doctor.find().select("-password");
+    res.json(docs);
+  } catch (err) { res.status(500).json({ message: err.message }); }
+};
+
+export const getAllPatients = async (req, res) => {
+  try {
+    const patients = await Patient.find().select("-password");
+    res.json(patients);
+  } catch (err) { res.status(500).json({ message: err.message }); }
+};
+
+export const deleteDoctor = async (req, res) => {
+  try {
+    await Doctor.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+};
+
+export const deletePatient = async (req, res) => {
+  try {
+    await Patient.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ message: err.message }); }
 };

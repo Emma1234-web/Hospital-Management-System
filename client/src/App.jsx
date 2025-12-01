@@ -7,7 +7,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import AdminDashboard from "./pages/AdminDashboard";
 import DoctorDashboard from "./pages/DoctorDashboard";
 import PatientDashboard from "./pages/PatientDashboard";
-
+import "./App.css";
 
 export default function App() {
   return (
@@ -15,13 +15,10 @@ export default function App() {
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
-        
         <Route path="/login" element={<Login />} />
-         
-          <Route path="/register" element={<Register />} />
-      </Routes>
-        
-  <Route
+        <Route path="/register" element={<Register />} />
+
+<Route
   path="/admin-dashboard"
   element={
     <ProtectedRoute allowedRoles={["admin"]}>
@@ -47,7 +44,7 @@ export default function App() {
     </ProtectedRoute>
   }
 />
-
+      </Routes>
     </BrowserRouter>
   );
 }

@@ -1,10 +1,13 @@
-import { sendEmail } from "../utils/sendEmail.js";
+let notifications = [];
 
-export const sendAppointmentEmail = async (req, res) => {
-  try {
-    const { email, patientName, date, time, doctorName } = req.body;
-    const html = `<h2>Appointment</h2><p>Hi ${patientName} — your appointment with Dr. ${doctorName} on ${date} at ${time} is confirmed.</p>`;
-    await sendEmail(email, "Appointment Confirmation", html);
-    res.json({ success: true });
-  } catch (error) { res.status(500).json({ message: error.message }); }
+export const createNotification = (req, res) => {
+  const { to, title, body } = req.body;
+  notifications.push({ id: Date.now().toString(), to, title, body, createdAt: new Date() });
+  res.status(201).json({ success: true });
+};
+
+export const getNotifications = (req, res) => {
+  const user = req.user;
+  const list = notifications.filter(n => n.to === user.role || n.to === user.id);
+  res.json(list);
 };

@@ -20,7 +20,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/patients", patientRoutes);
@@ -29,10 +28,8 @@ app.use("/api/appointments", appointmentRoutes);
 app.use("/api/medical-records", medicalRecordRoutes);
 app.use("/api/notify", notificationRoutes);
 
-// Health
 app.get("/", (_req, res) => res.send("Hospital Backend is running"));
 
-// Error handler (last)
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;

@@ -1,13 +1,12 @@
 import express from "express";
-import {
-  createAppointment, getAppointments, getSingleAppointment, updateAppointment, deleteAppointment
-} from "../controllers/appointmentController.js";
-import { protect, requireRole } from "../middleware/authMiddleware.js";
+import { protect } from "../middleware/authMiddleware.js";
+import { createAppointment, getAppointments, updateAppointment, deleteAppointment } from "../controllers/appointmentController.js";
 
 const router = express.Router();
+
+router.post("/", protect, createAppointment);
 router.get("/", protect, getAppointments);
-router.post("/", protect, createAppointment); // patients/doctors create through frontend
-router.get("/:id", protect, getSingleAppointment);
 router.put("/:id", protect, updateAppointment);
-router.delete("/:id", protect, requireRole("admin"), deleteAppointment);
+router.delete("/:id", protect, deleteAppointment);
+
 export default router;

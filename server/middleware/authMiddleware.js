@@ -1,50 +1,27 @@
 import jwt from "jsonwebtoken";
-import User from "../models/User.js";
+import Admin from "../models/Admin.js";
+import Doctor from "../models/Doctor.js";
+import Patient from "../models/Patient.js";
 
-// 🔹 Protect any authenticated user
 export const protect = async (req, res, next) => {
-  const authHeader = req.headers.authorization;
+  const header = req.headers.authorization;
+  if (!header?.startsWith("Bearer ")) return res.status(401).json({ message: "Not authorized" });
 
-  if (!authHeader?.startsWith("Bearer ")) {
-    return res.status(401).json({ message: "Not authorized" });
-  }
-
-  const token = authHeader.split(" ")[1];
-
+  const token = header.split(" ")[1];
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    // Attach user to request (without password)
-    const user = await User.findById(decoded.id).select("-password");
-
-    if (!user) {
-      return res.status(401).json({ message: "Not authorized" });
-    }
-
-    req.user = user;
+    req.user = { id: decoded.id, role: decoded.role };
+    if (decoded.role === "admin") req.account = await Admin.findById(decoded.id).select("-password");
+    if (decoded.role === "doctor") req.account = await Doctor.findById(decoded.id).select("-password");
+    if (decoded.role === "patient") req.account = await Patient.findById(decoded.id).select("-password");
     next();
-  } catch (error) {
-    return res.status(401).json({ message: "Token invalid" });
+  } catch (err) {
+    res.status(401).json({ message: "Token invalid" });
   }
 };
 
-// 🔹 Role-based access (general)
 export const requireRole = (role) => (req, res, next) => {
   if (!req.user) return res.status(401).json({ message: "Not authorized" });
-
-  if (req.user.role !== role) {
-    return res.status(403).json({ message: "Forbidden: Insufficient permissions" });
-  }
-
-  next();
-};
-
-export const verifyAdmin = (req, res, next) => {
-  if (!req.user) return res.status(401).json({ message: "Not authorized" });
-
-  if (req.user.role !== "admin") {
-    return res.status(403).json({ message: "Admin access only" });
-  }
-
+  if (req.user.role !== role) return res.status(403).json({ message: "Forbidden" });
   next();
 };

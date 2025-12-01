@@ -1,54 +1,44 @@
-import User from "../models/User.js";
-import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import Admin from "../models/Admin.js";
+import Doctor from "../models/Doctor.js";
+import Patient from "../models/Patient.js";
+
+const sign = (id, role) => jwt.sign({ id, role }, process.env.JWT_SECRET, { expiresIn: "7d" });
 
 export const register = async (req, res) => {
+  const { name, email, password, role, ...rest } = req.body;
   try {
-    const { name, email, password, role } = req.body;
+    if (role === "admin") return res.status(403).json({ message: "Admin cannot register via UI" });
 
-    // prevent users from creating admin
-    if (role === "admin") {
-      return res.status(403).json({ message: "Admin cannot be self-created" });
+    if (role === "doctor") {
+      const exists = await Doctor.findOne({ email });
+      if (exists) return res.status(400).json({ message: "Doctor email exists" });
+      const doc = await Doctor.create({ name, email, password, ...rest });
+      return res.status(201).json({ success: true, user: { id: doc._id, name: doc.name, email: doc.email, role: "doctor" } });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    if (role === "patient") {
+      const exists = await Patient.findOne({ email });
+      if (exists) return res.status(400).json({ message: "Patient email exists" });
+      const pat = await Patient.create({ name, email, password, ...rest });
+      return res.status(201).json({ success: true, user: { id: pat._id, name: pat.name, email: pat.email, role: "patient" } });
+    }
 
-    const newUser = await User.create({
-      name,
-      email,
-      password: hashedPassword,
-      role: role || "user",
-    });
-
-    res.status(201).json({ message: "User registered", user: newUser });
-
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+    return res.status(400).json({ message: "Invalid role" });
+  } catch (err) { res.status(500).json({ message: err.message }); }
 };
 
-
-// LOGIN CONTROLLER (You will need this too)
 export const login = async (req, res) => {
+  const { email, password, role } = req.body;
   try {
-    const { email, password } = req.body;
-
-    const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ message: "User not found" });
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch)
-      return res.status(400).json({ message: "Incorrect password" });
-
-    const token = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
-
-    res.status(200).json({ message: "Login successful", token, user });
-
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+    let account;
+    if (role === "admin") account = await Admin.findOne({ email });
+    if (role === "doctor") account = await Doctor.findOne({ email });
+    if (role === "patient") account = await Patient.findOne({ email });
+    if (!account) return res.status(400).json({ message: "Account not found" });
+    const ok = await account.comparePassword(password);
+    if (!ok) return res.status(400).json({ message: "Wrong password" });
+    const token = sign(account._id, role);
+    res.json({ success: true, token, user: { id: account._id, name: account.name, email: account.email, role } });
+  } catch (err) { res.status(500).json({ message: err.message }); }
 };

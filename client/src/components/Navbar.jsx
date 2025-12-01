@@ -1,69 +1,68 @@
-import { Link } from "react-router-dom";
-import { useState } from "react";
+/* eslint-disable react-hooks/set-state-in-effect */
+import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 export default function Navbar() {
-  const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setUser(null);
+    navigate("/login");
+  };
 
   return (
-    <nav className="px-6 md:px-10 py-4 shadow-sm bg-white">
-      <div className="flex items-center justify-between">
-        
-        {/* Logo */}
-        <div className="text-2xl font-bold text-blue-600">Hospital</div>
+    <nav className="bg-blue-600 text-white p-4 flex justify-between items-center">
+      <Link to="/" className="font-bold text-xl">
+        Jabaka Hospital
+      </Link>
 
-        {/* Desktop Links */}
-        <ul className="hidden md:flex gap-8 text-gray-700">
-          <li><Link to="/">Home</Link></li>
-          <li><Link to="/dashboard">Dashboard</Link></li>
-          <li><Link to="/patients">Patients</Link></li>
-          <li><Link to="/doctors">Doctors</Link></li>
-          <li><Link to="/appointments">Appointments</Link></li>
-          <li><Link to="/profile">Profile</Link></li>
-        </ul>
+      <div className="space-x-4">
+        {user ? (
+          <>
+            {user.role === "admin" && (
+              <Link to="/admin-dashboard" className="hover:underline">
+                Dashboard
+              </Link>
+            )}
+            {user.role === "doctor" && (
+              <Link to="/doctor-dashboard" className="hover:underline">
+                Dashboard
+              </Link>
+            )}
+            {user.role === "patient" && (
+              <Link to="/patient-dashboard" className="hover:underline">
+                Dashboard
+              </Link>
+            )}
 
-        {/* Search + Login for Desktop */}
-        <div className="hidden md:flex items-center gap-4">
-          <button className="text-lg">🔍</button>
-          <Link
-            to="/login"
-            className="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600"
-          >
-            Login
-          </Link>
-        </div>
-
-        {/* Hamburger Menu Button (Mobile) */}
-        <button
-          className="md:hidden text-3xl"
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          {isOpen ? "✖️" : "☰"}
-        </button>
-      </div>
-
-      {/* Mobile Menu */}
-      {isOpen && (
-        <div className="md:hidden mt-4 flex flex-col gap-4 text-gray-700">
-          <Link to="/" onClick={() => setIsOpen(false)}>Home</Link>
-          <Link to="/dashboard" onClick={() => setIsOpen(false)}>Dashboard</Link>
-          <Link to="/patients" onClick={() => setIsOpen(false)}>Patients</Link>
-          <Link to="/doctors" onClick={() => setIsOpen(false)}>Doctors</Link>
-          <Link to="/appointments" onClick={() => setIsOpen(false)}>Appointments</Link>
-          <Link to="/profile" onClick={() => setIsOpen(false)}>Profile</Link>
-
-          {/* Search + Login for mobile */}
-          <div className="flex items-center gap-3 mt-2">
-            <button className="text-lg">🔍</button>
-            <Link
-              to="/login"
-              className="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600"
-              onClick={() => setIsOpen(false)}
+            <button
+              onClick={handleLogout}
+              className="bg-red-600 px-3 py-1 rounded hover:bg-red-700 transition"
             >
+              Logout
+            </button>
+          </>
+        ) : (
+          <>
+            <Link to="/login" className="hover:underline">
               Login
             </Link>
-          </div>
-        </div>
-      )}
+            <Link to="/register" className="hover:underline">
+              Register
+            </Link>
+          </>
+        )}
+      </div>
     </nav>
   );
 }

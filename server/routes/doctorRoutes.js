@@ -1,13 +1,9 @@
 import express from "express";
-import {
-  createDoctor, getDoctors, getSingleDoctor, updateDoctor, deleteDoctor
-} from "../controllers/doctorController.js";
 import { protect, requireRole } from "../middleware/authMiddleware.js";
+import { getDoctorById, updateDoctor } from "../controllers/doctorController.js";
 
 const router = express.Router();
-router.get("/", protect, getDoctors);
-router.post("/", protect, requireRole("admin"), createDoctor);
-router.get("/:id", protect, getSingleDoctor);
-router.put("/:id", protect, requireRole("admin"), updateDoctor);
-router.delete("/:id", protect, requireRole("admin"), deleteDoctor);
+router.get("/:id", protect, requireRole("doctor"), getDoctorById);
+router.put("/:id", protect, requireRole("doctor"), updateDoctor);
+
 export default router;

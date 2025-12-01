@@ -1,12 +1,11 @@
 import mongoose from "mongoose";
 
-const MedicalRecordSchema = new mongoose.Schema({
+const medicalRecordSchema = new mongoose.Schema({
   patient: { type: mongoose.Schema.Types.ObjectId, ref: "Patient", required: true },
-  doctor: { type: mongoose.Schema.Types.ObjectId, ref: "Doctor", required: true },
-  diagnosis: { type: String, required: true },
-  treatment: { type: String, required: true },
-  notes: { type: String },
-  date: { type: String, required: true }
+  doctor: { type: mongoose.Schema.Types.ObjectId, ref: "Doctor" },
+  notes: { type: String, default: "" },
+  prescriptions: { type: String, default: "" },
+  attachments: [{ type: String }],
 }, { timestamps: true });
 
-export default mongoose.model("MedicalRecord", MedicalRecordSchema);
+export default mongoose.model("MedicalRecord", medicalRecordSchema);

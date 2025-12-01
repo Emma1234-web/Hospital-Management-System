@@ -1,14 +1,18 @@
 import express from "express";
-import { verifyAdmin } from "../middleware/authMiddleware.js";
+import { protect, requireRole } from "../middleware/authMiddleware.js";
+import {
+  createDoctor, createPatient, getAllDoctors, getAllPatients, deleteDoctor, deletePatient
+} from "../controllers/adminController.js";
 
 const router = express.Router();
 
-router.get("/dashboard", verifyAdmin, (req, res) => {
-  res.json({ message: "Admin dashboard accessed successfully" });
-});
+router.use(protect, requireRole("admin"));
 
-router.post("/create", verifyAdmin, (req, res) => {
-  res.json({ message: "Admin created successfully" });
-});
+router.post("/create-doctor", createDoctor);
+router.post("/create-patient", createPatient);
+router.get("/doctors", getAllDoctors);
+router.get("/patients", getAllPatients);
+router.delete("/doctor/:id", deleteDoctor);
+router.delete("/patient/:id", deletePatient);
 
 export default router;

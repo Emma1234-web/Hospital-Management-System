@@ -1,22 +1,44 @@
+import { useState, useEffect } from "react";
+import axios from "axios";
+
 export default function PatientDashboard() {
-  const user = JSON.parse(localStorage.getItem("user"));
+  const [appointments, setAppointments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const token = localStorage.getItem("token");
+
+  const fetchAppointments = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get("http://localhost:5000/api/appointments", { headers: { Authorization: `Bearer ${token}` } });
+      setAppointments(res.data);
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to fetch appointments");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAppointments();
+  }, []);
+
+  if (loading) return <p className="p-6">Loading appointments...</p>;
+  if (error) return <p className="p-6 text-red-600">{error}</p>;
 
   return (
     <div className="p-6">
-      <h1 className="text-3xl font-bold text-purple-700">Patient Dashboard</h1>
-      <p className="text-gray-700 mt-2">Welcome {user?.name}</p>
-
-      <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-white p-6 shadow rounded-xl">
-          <h2 className="text-xl font-semibold">Book Appointment</h2>
-          <p className="text-gray-600">Schedule a visit with a doctor.</p>
-        </div>
-
-        <div className="bg-white p-6 shadow rounded-xl">
-          <h2 className="text-xl font-semibold">My Appointments</h2>
-          <p className="text-gray-600">Track your upcoming sessions.</p>
-        </div>
-      </div>
+      <h2 className="text-2xl font-bold mb-4">Patient Dashboard</h2>
+      {appointments.length === 0 ? <p>You have no appointments</p> : (
+        <ul className="space-y-2">
+          {appointments.map(a => (
+            <li key={a._id} className="border p-2 rounded">
+              With Dr. {a.doctor.name} on {new Date(a.date).toLocaleDateString()} at {a.time} ({a.reason})
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

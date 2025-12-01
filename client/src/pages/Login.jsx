@@ -15,28 +15,16 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/login", {
-        email,
-        password,
-      });
-
+      const res = await axios.post("http://localhost:5000/api/auth/login", { email, password });
       const { token, user } = res.data;
 
-      // Save login session
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
 
-      // Redirect based on role
-      if (user.role === "admin") {
-        navigate("/admin-dashboard");
-      } else if (user.role === "doctor") {
-        navigate("/doctor-dashboard");
-      } else if (user.role === "patient") {
-        navigate("/patient-dashboard");
-      } else {
-        navigate("/dashboard"); // default
-      }
-
+      if (user.role === "admin") navigate("/admin-dashboard");
+      else if (user.role === "doctor") navigate("/doctor-dashboard");
+      else if (user.role === "patient") navigate("/patient-dashboard");
+      else navigate("/");
     } catch (err) {
       setError(err.response?.data?.message || "Login failed");
     } finally {
@@ -47,17 +35,11 @@ export default function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-md">
-        
-        <h2 className="text-3xl font-bold text-center text-blue-600 mb-6">
-          Hospital Login
-        </h2>
+        <h2 className="text-3xl font-bold text-center text-blue-600 mb-6">Hospital Login</h2>
 
-        {/* Error Message */}
         {error && (
           <div className="bg-red-100 text-red-700 p-3 rounded-md text-center mb-4">
             <p>{error}</p>
-
-            {/* If user does not exist → show register button */}
             {error.toLowerCase().includes("not found") && (
               <button
                 onClick={() => navigate("/register")}
@@ -69,7 +51,6 @@ export default function Login() {
           </div>
         )}
 
-        {/* Login Form */}
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
             <label className="text-gray-700 block mb-1">Email</label>
@@ -104,7 +85,6 @@ export default function Login() {
           </button>
         </form>
 
-        {/* Register Redirect */}
         <p className="text-center text-gray-600 mt-4">
           Don’t have an account?
           <span
@@ -114,7 +94,6 @@ export default function Login() {
             Register
           </span>
         </p>
-
       </div>
     </div>
   );
