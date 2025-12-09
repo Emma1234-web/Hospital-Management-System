@@ -1,28 +1,32 @@
-import { useNavigate } from "react-router-dom";
+// client/src/pages/Home.jsx
+import { Link } from "react-router-dom";
 
 export default function Home() {
-  const navigate = useNavigate();
-
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
-      <h1 className="text-4xl font-bold mb-6 text-blue-600">Welcome to Hospital Management System</h1>
-      <p className="text-lg mb-4 text-gray-700 text-center">
-        Manage doctors, patients, and appointments seamlessly.
-      </p>
+    <div className="px-4 py-8">
+      <h1 className="text-3xl font-bold text-center mb-6">Hospital Management System</h1>
 
-      <div className="flex space-x-4">
-        <button
-          onClick={() => navigate("/login")}
-          className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition"
-        >
-          Login
-        </button>
-        <button
-          onClick={() => navigate("/register")}
-          className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition"
-        >
-          Register
-        </button>
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="bg-white p-6 rounded shadow text-center">
+          <div className="text-4xl mb-3">👥</div>
+          <h3 className="font-semibold">Patients</h3>
+          <p className="text-sm text-gray-600">Manage patient records and appointments.</p>
+          <Link to="/patients" className="text-blue-600 mt-3 inline-block">Open</Link>
+        </div>
+
+        <div className="bg-white p-6 rounded shadow text-center">
+          <div className="text-4xl mb-3">🩺</div>
+          <h3 className="font-semibold">Doctors</h3>
+          <p className="text-sm text-gray-600">Manage doctors and schedules.</p>
+          <Link to="/doctors" className="text-blue-600 mt-3 inline-block">Open</Link>
+        </div>
+
+        <div className="bg-white p-6 rounded shadow text-center">
+          <div className="text-4xl mb-3">📅</div>
+          <h3 className="font-semibold">Appointments</h3>
+          <p className="text-sm text-gray-600">View and create appointments.</p>
+          <Link to="/appointments" className="text-blue-600 mt-3 inline-block">Open</Link>
+        </div>
       </div>
     </div>
   );

@@ -1,98 +1,50 @@
+// client/src/pages/Login.jsx
 import { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import API from "../api/axios";
+import useAuth from "../hooks/useAuth";
+import toast from "react-hot-toast";
 
 export default function Login() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const { login } = useAuth();
+  const [form, setForm] = useState({ email: "", password: "", role: "patient" });
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async (e) => {
+  const submit = async (e) => {
     e.preventDefault();
-    setError("");
     setLoading(true);
-
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/login", { email, password });
-      const { token, user } = res.data;
-
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
-
-      if (user.role === "admin") navigate("/admin-dashboard");
-      else if (user.role === "doctor") navigate("/doctor-dashboard");
-      else if (user.role === "patient") navigate("/patient-dashboard");
-      else navigate("/");
+      const res = await API.post("/auth/login", form);
+      login(res.data.token, res.data.user);
+      toast.success("Logged in");
+      if (res.data.user.role === "admin") navigate("/admin-dashboard");
+      else if (res.data.user.role === "doctor") navigate("/doctor-dashboard");
+      else navigate("/patient-dashboard");
     } catch (err) {
-      setError(err.response?.data?.message || "Login failed");
-    } finally {
-      setLoading(false);
-    }
+      toast.error(err.response?.data?.message || "Login failed");
+    } finally { setLoading(false); }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-md">
-        <h2 className="text-3xl font-bold text-center text-blue-600 mb-6">Hospital Login</h2>
+    <div className="min-h-screen flex items-center justify-center px-4">
+      <div className="w-full max-w-md bg-white p-6 rounded-lg shadow">
+        <h2 className="text-2xl font-bold text-center mb-4">Login</h2>
 
-        {error && (
-          <div className="bg-red-100 text-red-700 p-3 rounded-md text-center mb-4">
-            <p>{error}</p>
-            {error.toLowerCase().includes("not found") && (
-              <button
-                onClick={() => navigate("/register")}
-                className="mt-3 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
-              >
-                Create an Account
-              </button>
-            )}
-          </div>
-        )}
+        <form onSubmit={submit} className="space-y-3">
+          <select className="w-full p-2 border rounded" value={form.role} onChange={e => setForm({...form, role: e.target.value})}>
+            <option value="patient">Patient</option>
+            <option value="doctor">Doctor</option>
+            <option value="admin">Admin</option>
+          </select>
 
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div>
-            <label className="text-gray-700 block mb-1">Email</label>
-            <input
-              type="email"
-              className="w-full p-3 border rounded-lg mt-1 focus:ring-2 focus:ring-blue-200"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              autoComplete="username"
-            />
-          </div>
-
-          <div>
-            <label className="text-gray-700 block mb-1">Password</label>
-            <input
-              type="password"
-              className="w-full p-3 border rounded-lg mt-1 focus:ring-2 focus:ring-blue-200"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              autoComplete="current-password"
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition"
-            disabled={loading}
-          >
-            {loading ? "Signing in..." : "Login"}
-          </button>
+          <input className="w-full p-2 border rounded" placeholder="Email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} required />
+          <input className="w-full p-2 border rounded" type="password" placeholder="Password" value={form.password} onChange={e => setForm({...form, password: e.target.value})} required />
+          <button disabled={loading} className="w-full bg-blue-600 text-white p-2 rounded">{loading ? "Signing in..." : "Login"}</button>
         </form>
 
-        <p className="text-center text-gray-600 mt-4">
-          Don’t have an account?
-          <span
-            className="text-blue-600 ml-1 cursor-pointer"
-            onClick={() => navigate("/register")}
-          >
-            Register
-          </span>
+        <p className="text-center text-gray-600 mt-3">
+          Don't have an account? <span onClick={()=>navigate("/register")} className="text-blue-600 cursor-pointer">Register</span>
         </p>
       </div>
     </div>

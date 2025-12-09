@@ -1,22 +1,26 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
-const doctorSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  specialization: { type: String, default: "" },
-  phone: { type: String, default: "" },
-  experience: { type: Number, default: 0 },
-  password: { type: String, required: true },
-}, { timestamps: true });
+const doctorSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    specialization: { type: String, required: true },
+    phone: { type: String },
+    role: { type: String, default: "doctor" }
+  },
+  { timestamps: true }
+);
 
-doctorSchema.pre("save", async function () {
-  if (!this.isModified("password")) return;
+doctorSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) return next();
   this.password = await bcrypt.hash(this.password, 10);
+  next();
 });
 
-doctorSchema.methods.comparePassword = function (entered) {
-  return bcrypt.compare(entered, this.password);
+doctorSchema.methods.matchPassword = async function (pwd) {
+  return await bcrypt.compare(pwd, this.password);
 };
 
 export default mongoose.model("Doctor", doctorSchema);

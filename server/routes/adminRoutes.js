@@ -1,18 +1,29 @@
+// server/routes/adminRoutes.js
 import express from "express";
-import { protect, requireRole } from "../middleware/authMiddleware.js";
 import {
-  createDoctor, createPatient, getAllDoctors, getAllPatients, deleteDoctor, deletePatient
+  getStats,
+  listUsers,
+  createDoctorByAdmin,
+  createPatientByAdmin,
+  deleteUserByAdmin,
+  updateUserByAdmin,
 } from "../controllers/adminController.js";
+
+import { protect, allowRoles } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.use(protect, requireRole("admin"));
+// all routes protected - admin only
+router.use(protect, allowRoles("admin"));
 
-router.post("/create-doctor", createDoctor);
-router.post("/create-patient", createPatient);
-router.get("/doctors", getAllDoctors);
-router.get("/patients", getAllPatients);
-router.delete("/doctor/:id", deleteDoctor);
-router.delete("/patient/:id", deletePatient);
+// stats
+router.get("/stats", getStats);
+
+// manage users
+router.get("/users", listUsers);
+router.post("/create-doctor", createDoctorByAdmin);
+router.post("/create-patient", createPatientByAdmin);
+router.put("/user/:id", updateUserByAdmin);
+router.delete("/user/:id", deleteUserByAdmin);
 
 export default router;

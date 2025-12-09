@@ -1,51 +1,151 @@
-import { useState, useEffect } from "react";
+/* eslint-disable react-hooks/immutability */
+// src/pages/Patients.jsx
+import { useEffect, useState } from "react";
 import axios from "axios";
+import Modal from "../components/Modal";
 
 export default function Patients() {
   const [patients, setPatients] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [open, setOpen] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [form, setForm] = useState({ name: "", email: "", age: "", gender: "" });
+  const [selectedId, setSelectedId] = useState(null);
 
-  const token = localStorage.getItem("token");
+  const API = "http://localhost:5000/api/patients";
 
-  const fetchPatients = async () => {
-    setLoading(true);
-    try {
-      const res = await axios.get("http://localhost:5000/api/patients", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setPatients(res.data);
-    } catch (err) {
-      setError(err.response?.data?.message || "Failed to fetch patients");
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    loadPatients();
+  }, []);
+
+  const loadPatients = async () => {
+    const res = await axios.get(API);
+    setPatients(res.data.data || []);
+  };
+
+  const handleOpenAdd = () => {
+    setEditMode(false);
+    setForm({ name: "", email: "", age: "", gender: "" });
+    setOpen(true);
+  };
+
+  const handleOpenEdit = (p) => {
+    setEditMode(true);
+    setSelectedId(p._id);
+    setForm({
+      name: p.name,
+      email: p.email,
+      age: p.age,
+      gender: p.gender,
+    });
+    setOpen(true);
+  };
+
+  const handleSubmit = async () => {
+    if (editMode) {
+      await axios.put(`${API}/${selectedId}`, form);
+    } else {
+      await axios.post(API, form);
+    }
+    setOpen(false);
+    loadPatients();
+  };
+
+  const deletePatient = async (id) => {
+    if (confirm("Delete patient?")) {
+      await axios.delete(`${API}/${id}`);
+      loadPatients();
     }
   };
 
-  useEffect(() => {
-    fetchPatients();
-  }, []);
-
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4">Patients</h2>
-      {error && <p className="text-red-600 mb-4">{error}</p>}
+    <div className="p-5">
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold">Patients</h1>
+        <button
+          onClick={handleOpenAdd}
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+        >
+          + Add Patient
+        </button>
+      </div>
 
-      {loading ? (
-        <p>Loading patients...</p>
-      ) : patients.length === 0 ? (
-        <p>No patients found.</p>
-      ) : (
-        <ul className="space-y-2">
-          {patients.map((p) => (
-            <li key={p._id} className="border p-3 rounded">
-              <p><strong>Name:</strong> {p.name}</p>
-              <p><strong>Email:</strong> {p.email}</p>
-              <p><strong>Age:</strong> {p.age || "N/A"}</p>
-            </li>
-          ))}
-        </ul>
-      )}
+      {/* Table */}
+      <div className="overflow-x-auto">
+        <table className="w-full border text-left">
+          <thead className="bg-gray-100 text-gray-700">
+            <tr>
+              <th className="p-2 border">Name</th>
+              <th className="p-2 border">Email</th>
+              <th className="p-2 border">Age</th>
+              <th className="p-2 border">Gender</th>
+              <th className="p-2 border">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {patients.map((p) => (
+              <tr key={p._id} className="border">
+                <td className="p-2 border">{p.name}</td>
+                <td className="p-2 border">{p.email}</td>
+                <td className="p-2 border">{p.age}</td>
+                <td className="p-2 border">{p.gender}</td>
+                <td className="p-2 border flex gap-2">
+                  <button
+                    onClick={() => handleOpenEdit(p)}
+                    className="bg-green-600 text-white px-3 py-1 rounded"
+                  >
+                    Edit
+                  </button>
+
+                  <button
+                    onClick={() => deletePatient(p._id)}
+                    className="bg-red-600 text-white px-3 py-1 rounded"
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Modal */}
+      <Modal open={open} title={editMode ? "Edit Patient" : "Add Patient"} onClose={() => setOpen(false)}>
+        <div className="flex flex-col gap-3">
+          <input
+            className="border p-2 rounded"
+            placeholder="Name"
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+          />
+          <input
+            className="border p-2 rounded"
+            placeholder="Email"
+            value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+          />
+          <input
+            className="border p-2 rounded"
+            placeholder="Age"
+            value={form.age}
+            onChange={(e) => setForm({ ...form, age: e.target.value })}
+          />
+          <input
+            className="border p-2 rounded"
+            placeholder="Gender"
+            value={form.gender}
+            onChange={(e) => setForm({ ...form, gender: e.target.value })}
+          />
+
+          <button
+            onClick={handleSubmit}
+            className="bg-blue-600 text-white py-2 rounded-lg mt-2"
+          >
+            {editMode ? "Save Changes" : "Add Patient"}
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 }

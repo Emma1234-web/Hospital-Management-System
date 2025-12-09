@@ -1,44 +1,41 @@
-import { useState, useEffect } from "react";
-import axios from "axios";
+
+import { useEffect, useState } from "react";
+import API from "../api/axios";
+import useAuth from "../hooks/useAuth";
+import toast from "react-hot-toast";
 
 export default function PatientDashboard() {
+  const { user } = useAuth();
   const [appointments, setAppointments] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  const token = localStorage.getItem("token");
-
-  const fetchAppointments = async () => {
-    setLoading(true);
-    try {
-      const res = await axios.get("http://localhost:5000/api/appointments", { headers: { Authorization: `Bearer ${token}` } });
-      setAppointments(res.data);
-    } catch (err) {
-      setError(err.response?.data?.message || "Failed to fetch appointments");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   useEffect(() => {
-    fetchAppointments();
-  }, []);
-
-  if (loading) return <p className="p-6">Loading appointments...</p>;
-  if (error) return <p className="p-6 text-red-600">{error}</p>;
+    const load = async () => {
+      try {
+        const res = await API.get(`/appointments?patient=${user?.id}`);
+        setAppointments(res.data.data || res.data);
+      } catch {
+        toast.error("Failed to load");
+      }
+    };
+    if (user) load();
+  }, [user]);
 
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4">Patient Dashboard</h2>
-      {appointments.length === 0 ? <p>You have no appointments</p> : (
-        <ul className="space-y-2">
-          {appointments.map(a => (
-            <li key={a._id} className="border p-2 rounded">
-              With Dr. {a.doctor.name} on {new Date(a.date).toLocaleDateString()} at {a.time} ({a.reason})
-            </li>
-          ))}
-        </ul>
-      )}
+    <div>
+      <h1 className="text-2xl font-semibold mb-4">Patient Dashboard</h1>
+      <div className="grid gap-4">
+        {appointments.map(a => (
+          <div key={a._id} className="bg-white p-4 rounded shadow">
+            <div className="flex justify-between">
+              <div>
+                <div className="font-semibold">{a.doctor?.name}</div>
+                <div className="text-sm text-gray-600">{a.date} {a.time}</div>
+              </div>
+              <div className="text-sm">{a.status}</div>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

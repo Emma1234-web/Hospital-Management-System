@@ -1,16 +1,35 @@
 import Patient from "../models/Patient.js";
 
-export const getPatientById = async (req, res) => {
+// CREATE
+export const createPatient = async (req, res) => {
   try {
-    const p = await Patient.findById(req.params.id).select("-password");
-    if (!p) return res.status(404).json({ message: "Patient not found" });
-    res.json(p);
-  } catch (err) { res.status(500).json({ message: err.message }); }
+    const pat = await Patient.create(req.body);
+    res.status(201).json(pat);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };
 
+// READ ALL
+export const getPatients = async (req, res) => {
+  const patients = await Patient.find();
+  res.json(patients);
+};
+
+// READ ONE
+export const getPatient = async (req, res) => {
+  const pat = await Patient.findById(req.params.id);
+  res.json(pat);
+};
+
+// UPDATE
 export const updatePatient = async (req, res) => {
-  try {
-    const updated = await Patient.findByIdAndUpdate(req.params.id, req.body, { new: true }).select("-password");
-    res.json(updated);
-  } catch (err) { res.status(500).json({ message: err.message }); }
+  const pat = await Patient.findByIdAndUpdate(req.params.id, req.body, { new: true });
+  res.json(pat);
+};
+
+// DELETE
+export const deletePatient = async (req, res) => {
+  await Patient.findByIdAndDelete(req.params.id);
+  res.json({ message: "Deleted" });
 };

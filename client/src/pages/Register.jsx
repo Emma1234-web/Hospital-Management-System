@@ -1,121 +1,144 @@
 import { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import API from "../api/axios";
+import toast from "react-hot-toast";
 
 export default function Register() {
   const navigate = useNavigate();
 
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [role, setRole] = useState("patient"); // default
-  const [error, setError] = useState("");
+  const [form, setForm] = useState({
+    role: "patient",
+    name: "",
+    email: "",
+    password: "",
+    age: "",
+    gender: "male",
+    specialization: "",
+    phone: "",
+    secret: "" // for admin registration
+  });
+
   const [loading, setLoading] = useState(false);
 
-  const handleRegister = async (e) => {
+  const submit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
-
-    if (!["doctor", "patient"].includes(role)) {
-      setError("Invalid role selected!");
-      setLoading(false);
-      return;
-    }
 
     try {
-      await axios.post("http://localhost:5000/api/auth/register", {
-        name,
-        email,
-        password,
-        role,
-      });
-
-      alert(`${role.charAt(0).toUpperCase() + role.slice(1)} account created successfully!`);
-      setName("");
-      setEmail("");
-      setPassword("");
-      setRole("patient");
+      await API.post("/auth/register", form);
+      toast.success("Registered — please login");
+      navigate("/login");
     } catch (err) {
-      setError(err.response?.data?.message || "Registration failed!");
+      toast.error(err.response?.data?.message || "Registration failed");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-md">
-        <h2 className="text-3xl font-bold text-center text-blue-600 mb-6">Create Account</h2>
+    <div className="min-h-screen flex items-center justify-center px-4">
+      <div className="w-full max-w-md bg-white p-6 rounded-lg shadow">
+        <h2 className="text-2xl font-bold text-center mb-4">Register</h2>
 
-        {error && (
-          <p className="bg-red-100 text-red-700 p-2 rounded-md text-center mb-4">{error}</p>
-        )}
+        <form onSubmit={submit} className="space-y-3">
+          
+          {/* ROLE SELECTOR */}
+          <select
+            value={form.role}
+            onChange={(e) => setForm({ ...form, role: e.target.value })}
+            className="w-full p-2 border rounded"
+          >
+            <option value="patient">Patient</option>
+            <option value="doctor">Doctor</option>
+            <option value="admin">Admin</option>
+          </select>
 
-        <form onSubmit={handleRegister} className="space-y-4">
-          <div>
-            <label className="text-gray-700 block mb-1">Full Name</label>
+          {/* COMMON FIELDS */}
+          <input
+            required
+            className="w-full p-2 border rounded"
+            placeholder="Full name"
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+          />
+
+          <input
+            required
+            className="w-full p-2 border rounded"
+            placeholder="Email"
+            value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+          />
+
+          <input
+            required
+            className="w-full p-2 border rounded"
+            placeholder="Password"
+            type="password"
+            value={form.password}
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
+          />
+
+          {/* PATIENT FIELDS */}
+          {form.role === "patient" && (
+            <>
+              <input
+                className="w-full p-2 border rounded"
+                placeholder="Age"
+                value={form.age}
+                onChange={(e) => setForm({ ...form, age: e.target.value })}
+              />
+
+              <select
+                className="w-full p-2 border rounded"
+                value={form.gender}
+                onChange={(e) => setForm({ ...form, gender: e.target.value })}
+              >
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+              </select>
+            </>
+          )}
+
+          {/* DOCTOR FIELDS */}
+          {form.role === "doctor" && (
+            <>
+              <input
+                className="w-full p-2 border rounded"
+                placeholder="Specialization"
+                value={form.specialization}
+                onChange={(e) =>
+                  setForm({ ...form, specialization: e.target.value })
+                }
+              />
+
+              <input
+                className="w-full p-2 border rounded"
+                placeholder="Phone number"
+                value={form.phone}
+                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+              />
+            </>
+          )}
+
+          {/* ADMIN FIELDS (Protected with SECRET KEY) */}
+          {form.role === "admin" && (
             <input
-              type="text"
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-200"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
               required
+              className="w-full p-2 border rounded"
+              placeholder="Admin Secret Code"
+              value={form.secret}
+              onChange={(e) => setForm({ ...form, secret: e.target.value })}
             />
-          </div>
-
-          <div>
-            <label className="text-gray-700 block mb-1">Email</label>
-            <input
-              type="email"
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-200"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-
-          <div>
-            <label className="text-gray-700 block mb-1">Password</label>
-            <input
-              type="password"
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-200"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-
-          <div>
-            <label className="text-gray-700 block mb-1">Select Role</label>
-            <select
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-200"
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-            >
-              <option value="patient">Patient</option>
-              <option value="doctor">Doctor</option>
-            </select>
-          </div>
+          )}
 
           <button
-            type="submit"
-            className="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition"
             disabled={loading}
+            className="w-full bg-green-600 text-white p-2 rounded"
           >
-            {loading ? "Creating account..." : "Register"}
+            {loading ? "Creating..." : "Register"}
           </button>
         </form>
-
-        <p className="text-center text-gray-600 mt-4">
-          Already have an account?
-          <span
-            className="text-blue-600 ml-1 cursor-pointer font-medium"
-            onClick={() => navigate("/login")}
-          >
-            Login
-          </span>
-        </p>
       </div>
     </div>
   );
