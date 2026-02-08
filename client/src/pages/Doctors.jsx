@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 import { useEffect, useState } from "react";
 import API from "../api/axios";
 import Modal from "../components/Modal";
@@ -7,6 +6,7 @@ export default function Doctors() {
   const [doctors, setDoctors] = useState([]);
   const [open, setOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
+  const [selectedId, setSelectedId] = useState(null);
 
   const [form, setForm] = useState({
     name: "",
@@ -15,14 +15,12 @@ export default function Doctors() {
     phone: "",
   });
 
-  const [selectedId, setSelectedId] = useState(null);
-
   const loadDoctors = async () => {
     try {
       const res = await API.get("/doctors");
       setDoctors(res.data.data || []);
     } catch (err) {
-      console.log(err);
+      console.error(err);
     }
   };
 
@@ -58,69 +56,65 @@ export default function Doctors() {
       setOpen(false);
       loadDoctors();
     } catch (err) {
-      console.log(err);
+      console.error(err);
     }
   };
 
   const remove = async (id) => {
     if (!confirm("Delete doctor?")) return;
-
-    try {
-      await API.delete(`/doctors/${id}`);
-      loadDoctors();
-    } catch (err) {
-      console.log(err);
-    }
+    await API.delete(`/doctors/${id}`);
+    loadDoctors();
   };
 
   return (
     <div className="p-5">
       <div className="flex justify-between mb-4">
         <h1 className="text-2xl font-bold">Doctors</h1>
-        <button onClick={openAdd} className="bg-blue-600 text-white px-4 py-2 rounded-lg">
+        <button onClick={openAdd} className="bg-blue-600 text-white px-4 py-2 rounded">
           + Add Doctor
         </button>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full border">
-          <thead className="bg-gray-100 text-gray-600">
-            <tr>
-              <th className="p-2 border">Name</th>
-              <th className="p-2 border">Email</th>
-              <th className="p-2 border">Specialization</th>
-              <th className="p-2 border">Phone</th>
-              <th className="p-2 border">Actions</th>
+      <table className="w-full border">
+        <thead className="bg-gray-100">
+          <tr>
+            <th className="p-2 border">Name</th>
+            <th className="p-2 border">Email</th>
+            <th className="p-2 border">Specialization</th>
+            <th className="p-2 border">Phone</th>
+            <th className="p-2 border">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {doctors.map((d) => (
+            <tr key={d._id}>
+              <td className="p-2 border">{d.name}</td>
+              <td className="p-2 border">{d.email}</td>
+              <td className="p-2 border">{d.specialization}</td>
+              <td className="p-2 border">{d.phone}</td>
+              <td className="p-2 border flex gap-2">
+                <button onClick={() => openEdit(d)} className="bg-green-600 text-white px-3 py-1 rounded">
+                  Edit
+                </button>
+                <button onClick={() => remove(d._id)} className="bg-red-600 text-white px-3 py-1 rounded">
+                  Delete
+                </button>
+              </td>
             </tr>
-          </thead>
+          ))}
+        </tbody>
+      </table>
 
-          <tbody>
-            {doctors.map((d) => (
-              <tr key={d._id}>
-                <td className="p-2 border">{d.name}</td>
-                <td className="p-2 border">{d.email}</td>
-                <td className="p-2 border">{d.specialization}</td>
-                <td className="p-2 border">{d.phone}</td>
-                <td className="p-2 border flex gap-2">
-                  <button onClick={() => openEdit(d)} className="bg-green-700 text-white px-3 py-1 rounded">
-                    Edit
-                  </button>
-                  <button onClick={() => remove(d._id)} className="bg-red-600 text-white px-3 py-1 rounded">
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <Modal open={open} title={editMode ? "Edit Doctor" : "Add Doctor"} onClose={() => setOpen(false)}>
+      <Modal open={open} onClose={() => setOpen(false)} title={editMode ? "Edit Doctor" : "Add Doctor"}>
         <div className="flex flex-col gap-3">
-          <input className="border p-2 rounded" placeholder="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-          <input className="border p-2 rounded" placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-          <input className="border p-2 rounded" placeholder="Specialization" value={form.specialization} onChange={(e) => setForm({ ...form, specialization: e.target.value })} />
-          <input className="border p-2 rounded" placeholder="Phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+          <input placeholder="Name" className="border p-2" value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })} />
+          <input placeholder="Email" className="border p-2" value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })} />
+          <input placeholder="Specialization" className="border p-2" value={form.specialization}
+            onChange={(e) => setForm({ ...form, specialization: e.target.value })} />
+          <input placeholder="Phone" className="border p-2" value={form.phone}
+            onChange={(e) => setForm({ ...form, phone: e.target.value })} />
 
           <button onClick={handleSubmit} className="bg-blue-600 text-white py-2 rounded">
             {editMode ? "Save Changes" : "Add Doctor"}

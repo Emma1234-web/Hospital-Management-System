@@ -1,26 +1,75 @@
 import Doctor from "../models/Doctor.js";
+import asyncHandler from "../middleware/asyncHandler.js";
 
-export const createDoctor = async (req, res) => {
-  const doc = await Doctor.create(req.body);
-  res.status(201).json(doc);
-};
+// CREATE
+export const createDoctor = asyncHandler(async (req, res) => {
+  const doctor = await Doctor.create(req.body);
 
-export const getDoctors = async (req, res) => {
-  const docs = await Doctor.find();
-  res.json(docs);
-};
+  res.status(201).json({
+    success: true,
+    data: doctor,
+  });
+});
 
-export const getDoctor = async (req, res) => {
-  const doc = await Doctor.findById(req.params.id);
-  res.json(doc);
-};
+// READ ALL
+export const getDoctors = asyncHandler(async (req, res) => {
+  const doctors = await Doctor.find();
 
-export const updateDoctor = async (req, res) => {
-  const doc = await Doctor.findByIdAndUpdate(req.params.id, req.body, { new: true });
-  res.json(doc);
-};
+  res.status(200).json({
+    success: true,
+    count: doctors.length,
+    data: doctors,
+  });
+});
 
-export const deleteDoctor = async (req, res) => {
-  await Doctor.findByIdAndDelete(req.params.id);
-  res.json({ message: "Deleted" });
-};
+// READ ONE
+export const getDoctor = asyncHandler(async (req, res) => {
+  const doctor = await Doctor.findById(req.params.id);
+
+  if (!doctor) {
+    const error = new Error("Doctor not found");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  res.status(200).json({
+    success: true,
+    data: doctor,
+  });
+});
+
+// UPDATE
+export const updateDoctor = asyncHandler(async (req, res) => {
+  const doctor = await Doctor.findByIdAndUpdate(
+    req.params.id,
+    req.body,
+    { new: true, runValidators: true }
+  );
+
+  if (!doctor) {
+    const error = new Error("Doctor not found");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  res.status(200).json({
+    success: true,
+    data: doctor,
+  });
+});
+
+// DELETE
+export const deleteDoctor = asyncHandler(async (req, res) => {
+  const doctor = await Doctor.findByIdAndDelete(req.params.id);
+
+  if (!doctor) {
+    const error = new Error("Doctor not found");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  res.status(200).json({
+    success: true,
+    message: "Doctor deleted successfully",
+  });
+});

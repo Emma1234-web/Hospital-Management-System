@@ -1,35 +1,55 @@
 import Patient from "../models/Patient.js";
 
-// CREATE
-export const createPatient = async (req, res) => {
+// CREATE (ADMIN)
+export const createPatient = async (req, res, next) => {
   try {
-    const pat = await Patient.create(req.body);
-    res.status(201).json(pat);
+    const patient = await Patient.create(req.body);
+    res.status(201).json({ success: true, data: patient });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-// READ ALL
-export const getPatients = async (req, res) => {
-  const patients = await Patient.find();
-  res.json(patients);
+// READ ALL (ADMIN / DOCTOR)
+export const getPatients = async (req, res, next) => {
+  try {
+    const patients = await Patient.find();
+    res.status(200).json({ success: true, data: patients });
+  } catch (err) {
+    next(err);
+  }
 };
 
 // READ ONE
-export const getPatient = async (req, res) => {
-  const pat = await Patient.findById(req.params.id);
-  res.json(pat);
+export const getPatient = async (req, res, next) => {
+  try {
+    const patient = await Patient.findById(req.params.id);
+    res.json({ success: true, data: patient });
+  } catch (err) {
+    next(err);
+  }
 };
 
 // UPDATE
-export const updatePatient = async (req, res) => {
-  const pat = await Patient.findByIdAndUpdate(req.params.id, req.body, { new: true });
-  res.json(pat);
+export const updatePatient = async (req, res, next) => {
+  try {
+    const patient = await Patient.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
+    res.json({ success: true, data: patient });
+  } catch (err) {
+    next(err);
+  }
 };
 
 // DELETE
-export const deletePatient = async (req, res) => {
-  await Patient.findByIdAndDelete(req.params.id);
-  res.json({ message: "Deleted" });
+export const deletePatient = async (req, res, next) => {
+  try {
+    await Patient.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
+  } catch (err) {
+    next(err);
+  }
 };

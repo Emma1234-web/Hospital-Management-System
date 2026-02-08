@@ -1,4 +1,3 @@
-// models/Patient.js
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
@@ -7,13 +6,13 @@ const patientSchema = new mongoose.Schema(
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    age: { type: Number },
-    gender: { type: String },
-    phone: { type: String },
-    address: { type: String },
+    age: Number,
+    gender: String,
+    phone: String,
+    address: String,
     medicalHistory: { type: String, default: "" },
     allergies: { type: String, default: "" },
-    role: { type: String, default: "patient" }
+    role: { type: String, default: "patient", immutable: true }
   },
   { timestamps: true }
 );
@@ -24,8 +23,8 @@ patientSchema.pre("save", async function (next) {
   next();
 });
 
-patientSchema.methods.matchPassword = async function (pwd) {
-  return await bcrypt.compare(pwd, this.password);
+patientSchema.methods.matchPassword = function (pwd) {
+  return bcrypt.compare(pwd, this.password);
 };
 
 export default mongoose.model("Patient", patientSchema);

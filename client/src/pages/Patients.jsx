@@ -7,6 +7,7 @@ export default function Patients() {
   const [patients, setPatients] = useState([]);
   const [open, setOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
+  const [selectedId, setSelectedId] = useState(null);
 
   const [form, setForm] = useState({
     name: "",
@@ -15,14 +16,12 @@ export default function Patients() {
     gender: "",
   });
 
-  const [selectedId, setSelectedId] = useState(null);
-
   const loadPatients = async () => {
     try {
       const res = await API.get("/patients");
-      setPatients(res.data.data || []);
+      setPatients(res.data.data);
     } catch (err) {
-      console.log(err);
+      console.error("Load patients error:", err.response?.data || err.message);
     }
   };
 
@@ -50,26 +49,33 @@ export default function Patients() {
 
   const handleSubmit = async () => {
     try {
+      if (!form.name || !form.email) {
+        alert("Name and Email are required");
+        return;
+      }
+
       if (editMode) {
         await API.put(`/patients/${selectedId}`, form);
       } else {
         await API.post("/patients", form);
       }
+
       setOpen(false);
       loadPatients();
     } catch (err) {
-      console.log(err);
+      console.error("Save error:", err.response?.data || err.message);
+      alert(err.response?.data?.message || "Action failed");
     }
   };
 
-  const remove = async (id) => {
-    if (!confirm("Delete patient?")) return;
+  const removePatient = async (id) => {
+    if (!window.confirm("Delete patient?")) return;
 
     try {
       await API.delete(`/patients/${id}`);
       loadPatients();
     } catch (err) {
-      console.log(err);
+      console.error("Delete error:", err.response?.data || err.message);
     }
   };
 
@@ -85,53 +91,85 @@ export default function Patients() {
         </button>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full border">
-          <thead className="bg-gray-100 text-gray-600">
-            <tr>
-              <th className="p-2 border">Name</th>
-              <th className="p-2 border">Email</th>
-              <th className="p-2 border">Age</th>
-              <th className="p-2 border">Gender</th>
-              <th className="p-2 border">Actions</th>
+      <table className="w-full border">
+        <thead className="bg-gray-100">
+          <tr>
+            <th className="border p-2">Name</th>
+            <th className="border p-2">Email</th>
+            <th className="border p-2">Age</th>
+            <th className="border p-2">Gender</th>
+            <th className="border p-2">Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {patients.map((p) => (
+            <tr key={p._id}>
+              <td className="border p-2">{p.name}</td>
+              <td className="border p-2">{p.email}</td>
+              <td className="border p-2">{p.age}</td>
+              <td className="border p-2">{p.gender}</td>
+              <td className="border p-2 flex gap-2">
+                <button
+                  onClick={() => openEdit(p)}
+                  className="bg-green-600 text-white px-3 py-1 rounded"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => removePatient(p._id)}
+                  className="bg-red-600 text-white px-3 py-1 rounded"
+                >
+                  Delete
+                </button>
+              </td>
             </tr>
-          </thead>
+          ))}
+        </tbody>
+      </table>
 
-          <tbody>
-            {patients.map((p) => (
-              <tr key={p._id}>
-                <td className="p-2 border">{p.name}</td>
-                <td className="p-2 border">{p.email}</td>
-                <td className="p-2 border">{p.age}</td>
-                <td className="p-2 border">{p.gender}</td>
-                <td className="p-2 border flex gap-2">
-                  <button
-                    onClick={() => openEdit(p)}
-                    className="bg-green-700 text-white px-3 py-1 rounded"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => remove(p._id)}
-                    className="bg-red-600 text-white px-3 py-1 rounded"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <Modal open={open} onClose={() => setOpen(false)} title={editMode ? "Edit Patient" : "Add Patient"}>
+      <Modal
+        open={open}
+        onClose={() => setOpen(false)}
+        title={editMode ? "Edit Patient" : "Add Patient"}
+      >
         <div className="flex flex-col gap-3">
-          <input className="border p-2 rounded" placeholder="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-          <input className="border p-2 rounded" placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-          <input className="border p-2 rounded" placeholder="Age" value={form.age} onChange={(e) => setForm({ ...form, age: e.target.value })} />
-          <input className="border p-2 rounded" placeholder="Gender" value={form.gender} onChange={(e) => setForm({ ...form, gender: e.target.value })} />
+          <input
+            className="border p-2 rounded"
+            placeholder="Name"
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+          />
 
-          <button onClick={handleSubmit} className="bg-blue-600 text-white py-2 rounded">
+          <input
+            className="border p-2 rounded"
+            placeholder="Email"
+            value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+          />
+
+          <input
+            type="number"
+            className="border p-2 rounded"
+            placeholder="Age"
+            value={form.age}
+            onChange={(e) => setForm({ ...form, age: e.target.value })}
+          />
+
+          <select
+            className="border p-2 rounded"
+            value={form.gender}
+            onChange={(e) => setForm({ ...form, gender: e.target.value })}
+          >
+            <option value="">Select gender</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+
+          <button
+            onClick={handleSubmit}
+            className="bg-blue-600 text-white py-2 rounded"
+          >
             {editMode ? "Save Changes" : "Add Patient"}
           </button>
         </div>

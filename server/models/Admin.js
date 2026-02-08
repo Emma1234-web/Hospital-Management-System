@@ -1,26 +1,20 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
-const adminSchema = new mongoose.Schema(
-  {
-    name: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
-    role: { type: String, default: "admin" }
-  },
-  { timestamps: true }
-);
-
-// Hash password
-adminSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
-  this.password = await bcrypt.hash(this.password, 10);
-  next();
+const schema = new mongoose.Schema({
+  name: String,
+  email: { type: String, unique: true },
+  password: String,
+  role: { type: String, default: "admin" }
 });
 
-// Compare password
-adminSchema.methods.matchPassword = async function (pwd) {
-  return await bcrypt.compare(pwd, this.password);
+schema.pre("save", async function () {
+  if (!this.isModified("password")) return;
+  this.password = await bcrypt.hash(this.password, 10);
+});
+
+schema.methods.matchPassword = function (pwd) {
+  return bcrypt.compare(pwd, this.password);
 };
 
-export default mongoose.model("Admin", adminSchema);
+export default mongoose.model("Admin", schema);

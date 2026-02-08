@@ -1,12 +1,23 @@
 import express from "express";
 import {
-  getPatients, getPatient, createPatient, updatePatient, deletePatient
+  createPatient,
+  getPatients,
+  getPatient,
+  updatePatient,
+  deletePatient,
 } from "../controllers/patientController.js";
-import { protect, allowRoles } from "../middleware/authMiddleware.js";
+
+import { protect } from "../middleware/authMiddleware.js";
+import allowRoles from "../middleware/allowRoles.js";
+
 const router = express.Router();
-router.get("/", protect, allowRoles("admin","doctor"), getPatients);
-router.get("/:id", protect, allowRoles("admin","doctor","patient"), getPatient);
-router.post("/", protect, allowRoles("admin"), createPatient);
-router.put("/:id", protect, allowRoles("admin","doctor"), updatePatient);
-router.delete("/:id", protect, allowRoles("admin"), deletePatient);
+
+router.use(protect);
+
+router.post("/", allowRoles("admin"), createPatient);
+router.get("/", allowRoles("admin", "doctor"), getPatients);
+router.get("/:id", getPatient);
+router.put("/:id", allowRoles("admin"), updatePatient);
+router.delete("/:id", allowRoles("admin"), deletePatient);
+
 export default router;

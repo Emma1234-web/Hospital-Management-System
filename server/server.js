@@ -17,8 +17,8 @@ import doctorRoutes from "./routes/doctorRoutes.js";
 import appointmentRoutes from "./routes/appointmentRoutes.js";
 import medicalRecordRoutes from "./routes/medicalRecordRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
+import errorHandler from "./middleware/errorHandler.js";
 
-import { errorHandler } from "./middleware/errorHandler.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

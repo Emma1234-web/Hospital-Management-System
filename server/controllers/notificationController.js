@@ -51,9 +51,7 @@ export const markAsRead = async (req, res) => {
   }
 };
 
-/**
- * DELETE /api/notify/:id
- */
+
 export const deleteNotification = async (req, res) => {
   try {
     const note = await Notification.findByIdAndDelete(req.params.id);

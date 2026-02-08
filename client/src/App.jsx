@@ -13,7 +13,7 @@ import Doctors from "./pages/Doctors";
 import Appointments from "./pages/Appointments";
 import MedicalRecords from "./pages/MedicalRecords";
 import Profile from "./pages/Profile";
-import AddPatient from "./pages/AddPatient";
+
 
 import "./App.css";
 
@@ -99,10 +99,6 @@ export default function App() {
             
           }
           />
-              <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
-  <Route path="/patients/add" element={<AddPatient />} />
-</Route>
-          
         </Routes>
     
       </div>

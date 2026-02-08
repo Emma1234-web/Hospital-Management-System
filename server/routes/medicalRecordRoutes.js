@@ -1,12 +1,15 @@
 import express from "express";
 import {
-  getMedicalRecords, getMedicalRecord, createMedicalRecord, updateMedicalRecord, deleteMedicalRecord
+  createRecord,
+  getRecords,
 } from "../controllers/medicalRecordController.js";
-import { protect, allowRoles } from "../middleware/authMiddleware.js";
+
+import { protect } from "../middleware/authMiddleware.js";
+import allowRoles from "../middleware/allowRoles.js";
+
 const router = express.Router();
-router.get("/", protect, allowRoles("admin","doctor","patient"), getMedicalRecords);
-router.get("/:id", protect, allowRoles("admin","doctor","patient"), getMedicalRecord);
-router.post("/", protect, allowRoles("admin","doctor"), createMedicalRecord);
-router.put("/:id", protect, allowRoles("admin","doctor"), updateMedicalRecord);
-router.delete("/:id", protect, allowRoles("admin"), deleteMedicalRecord);
+
+router.post("/", protect, allowRoles("doctor"), createRecord);
+router.get("/", protect, allowRoles("doctor", "patient"), getRecords);
+
 export default router;

@@ -1,19 +1,29 @@
 import express from "express";
-import { protect, allowRoles } from "../middleware/authMiddleware.js";
 import {
-  getAppointments,
-  getAppointment,
   createAppointment,
-  updateAppointment,
-  deleteAppointment
+  getMyAppointments,
+  getDoctorAppointments,
+  approveAppointment,
+  rejectAppointment,
+  getAllAppointments,
+  assignDoctor,
 } from "../controllers/appointmentController.js";
+
+import { protect, allowRoles } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.get("/", protect, allowRoles("admin", "doctor", "patient"), getAppointments);
-router.get("/:id", protect, allowRoles("admin", "doctor", "patient"), getAppointment);
-router.post("/", protect, allowRoles("admin", "doctor"), createAppointment);
-router.put("/:id", protect, allowRoles("admin", "doctor"), updateAppointment);
-router.delete("/:id", protect, allowRoles("admin"), deleteAppointment);
+// patient
+router.post("/", protect, allowRoles("patient"), createAppointment);
+router.get("/mine", protect, allowRoles("patient"), getMyAppointments);
+
+// doctor
+router.get("/doctor", protect, allowRoles("doctor"), getDoctorAppointments);
+router.patch("/:id/approve", protect, allowRoles("doctor"), approveAppointment);
+router.patch("/:id/reject", protect, allowRoles("doctor"), rejectAppointment);
+
+// admin
+router.get("/", protect, allowRoles("admin"), getAllAppointments);
+router.patch("/:id/assign", protect, allowRoles("admin"), assignDoctor);
 
 export default router;
