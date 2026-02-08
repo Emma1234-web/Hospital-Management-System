@@ -17,6 +17,7 @@ import doctorRoutes from "./routes/doctorRoutes.js";
 import appointmentRoutes from "./routes/appointmentRoutes.js";
 import medicalRecordRoutes from "./routes/medicalRecordRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
+import billingRoutes from "./routes/billingRoutes.js";
 import errorHandler from "./middleware/errorHandler.js";
 
 
@@ -41,6 +42,7 @@ app.use("/api/doctors", doctorRoutes);
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/medical-records", medicalRecordRoutes);
 app.use("/api/notify", notificationRoutes);
+app.use("/api/billing", billingRoutes);
 
 // health
 app.get("/", (_req, res) => res.send("Hospital Backend is running"));
