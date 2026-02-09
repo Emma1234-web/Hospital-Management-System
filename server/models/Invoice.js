@@ -61,6 +61,14 @@ const invoiceSchema = new mongoose.Schema(
       ref: "User",
       default: null,
     },
+    paymentMethod: {
+      type: String,
+      default: "",
+    },
+    transactionId: {
+      type: String,
+      default: "",
+    },
   },
   { timestamps: true }
 );

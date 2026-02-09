@@ -4,12 +4,12 @@ const appointmentSchema = new mongoose.Schema(
   {
     patientId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Patient",
       required: true,
     },
     doctorId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Doctor",
       default: null,
     },
     date: {
@@ -19,6 +19,11 @@ const appointmentSchema = new mongoose.Schema(
     time: {
       type: String,
       required: true,
+    },
+    durationMinutes: {
+      type: Number,
+      default: 30,
+      min: 5,
     },
     reason: {
       type: String,

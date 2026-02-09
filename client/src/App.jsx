@@ -13,6 +13,12 @@ import Doctors from "./pages/Doctors";
 import Appointments from "./pages/Appointments";
 import MedicalRecords from "./pages/MedicalRecords";
 import Profile from "./pages/Profile";
+import Billing from "./pages/Billing";
+import AuditLogs from "./pages/AuditLogs";
+import Prescriptions from "./pages/Prescriptions";
+import LabResults from "./pages/LabResults";
+import Notifications from "./pages/Notifications";
+import BookAppointment from "./pages/BookAppointment";
 
 
 import "./App.css";
@@ -82,10 +88,64 @@ export default function App() {
           />
 
           <Route
+            path="/book-appointment"
+            element={
+              <ProtectedRoute allowedRoles={["patient"]}>
+                <BookAppointment />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
             path="/medical-records"
             element={
               <ProtectedRoute allowedRoles={["admin", "doctor"]}>
                 <MedicalRecords />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/billing"
+            element={
+              <ProtectedRoute allowedRoles={["admin", "patient"]}>
+                <Billing />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/prescriptions"
+            element={
+              <ProtectedRoute allowedRoles={["admin", "doctor", "patient"]}>
+                <Prescriptions />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/lab-results"
+            element={
+              <ProtectedRoute allowedRoles={["admin", "doctor", "patient"]}>
+                <LabResults />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/notifications"
+            element={
+              <ProtectedRoute allowedRoles={["admin", "doctor", "patient"]}>
+                <Notifications />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/audit-logs"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <AuditLogs />
               </ProtectedRoute>
             }
           />
@@ -96,8 +156,7 @@ export default function App() {
               <ProtectedRoute allowedRoles={["admin", "doctor", "patient"]}>
                 <Profile />
               </ProtectedRoute>
-            
-          }
+            }
           />
         </Routes>
     

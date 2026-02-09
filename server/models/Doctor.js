@@ -6,7 +6,24 @@ const doctorSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   specialization: String,
-  role: { type: String, default: "doctor" }
+  role: { type: String, default: "doctor" },
+  availabilityDays: {
+    type: [Number],
+    default: [],
+  },
+  availabilityStartTime: {
+    type: String,
+    default: "",
+  },
+  availabilityEndTime: {
+    type: String,
+    default: "",
+  },
+  slotDurationMinutes: {
+    type: Number,
+    default: 30,
+    min: 5,
+  }
 }, { timestamps: true });
 
 doctorSchema.pre("save", async function (next) {

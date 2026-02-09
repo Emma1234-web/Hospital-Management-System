@@ -1,12 +1,19 @@
 import { useEffect, useState } from "react";
 import API from "../api/axios";
+import { ErrorBanner, EmptyState } from "../components/Feedback";
 
 export default function DoctorDashboard() {
   const [appointments, setAppointments] = useState([]);
+  const [error, setError] = useState("");
 
   const loadAppointments = async () => {
-    const res = await API.get("/appointments/doctor");
-    setAppointments(res.data);
+    try {
+      setError("");
+      const res = await API.get("/appointments/doctor");
+      setAppointments(res.data.data || res.data);
+    } catch (err) {
+      setError(err?.response?.data?.message || "Failed to load appointments");
+    }
   };
 
   useEffect(() => {
@@ -22,23 +29,30 @@ export default function DoctorDashboard() {
     <div className="p-5">
       <h1 className="text-2xl font-bold mb-4">My Appointments</h1>
 
-      <table className="w-full border">
-        <thead className="bg-gray-100">
+      <ErrorBanner message={error} />
+
+      {appointments.length === 0 && !error && (
+        <EmptyState title="No appointments" description="No appointments assigned yet." />
+      )}
+
+      <div className="table-shell overflow-x-auto">
+      <table className="table-pro">
+        <thead>
           <tr>
-            <th className="p-2 border">Patient</th>
-            <th className="p-2 border">Reason</th>
-            <th className="p-2 border">Status</th>
-            <th className="p-2 border">Actions</th>
+            <th>Patient</th>
+            <th>Reason</th>
+            <th>Status</th>
+            <th>Actions</th>
           </tr>
         </thead>
 
         <tbody>
           {appointments.map((a) => (
             <tr key={a._id}>
-              <td className="p-2 border">{a.patientId.name}</td>
-              <td className="p-2 border">{a.reason}</td>
-              <td className="p-2 border">{a.status}</td>
-              <td className="p-2 border flex gap-2">
+              <td>{a.patientId.name}</td>
+              <td>{a.reason}</td>
+              <td className="capitalize">{a.status}</td>
+              <td className="flex gap-2">
                 <button
                   onClick={() => updateStatus(a._id, "approve")}
                   className="bg-green-600 text-white px-3 py-1 rounded"
@@ -56,6 +70,7 @@ export default function DoctorDashboard() {
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

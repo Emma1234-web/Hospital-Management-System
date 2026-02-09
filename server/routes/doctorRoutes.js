@@ -15,8 +15,8 @@ const router = express.Router();
 router.use(protect);
 
 router.post("/", allowRoles("admin"), createDoctor);
-router.get("/", allowRoles("admin"), getDoctors);
-router.get("/:id", allowRoles("admin"), getDoctor);
+router.get("/", allowRoles("admin", "patient", "doctor"), getDoctors);
+router.get("/:id", allowRoles("admin", "patient", "doctor"), getDoctor);
 router.put("/:id", allowRoles("admin"), updateDoctor);
 router.delete("/:id", allowRoles("admin"), deleteDoctor);
 

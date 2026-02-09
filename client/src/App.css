@@ -29,3 +29,13 @@ body { font-family: Inter, system-ui, sans-serif; margin:0; padding:0; }
 .card { @apply bg-white p-6 rounded-lg shadow-lg transition transform hover:scale-105; }
 
 body { @apply bg-gray-100 font-sans; }
+
+@layer components {
+  .table-shell { @apply bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden; }
+  .table-pro { @apply w-full text-sm text-gray-700; }
+  .table-pro thead { @apply bg-gray-50 text-gray-600 uppercase text-xs tracking-wider; }
+  .table-pro th { @apply px-4 py-3 font-semibold text-left border-b border-gray-200; }
+  .table-pro td { @apply px-4 py-3 border-b border-gray-100; }
+  .table-pro tbody tr { @apply hover:bg-gray-50 transition; }
+  .table-pro tbody tr:last-child td { @apply border-b-0; }
+}

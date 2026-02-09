@@ -1,4 +1,6 @@
 import Invoice from "../models/Invoice.js";
+import AuditLog from "../models/AuditLog.js";
+import { createInAppNotification } from "../utils/notificationService.js";
 
 const toNumber = (value) => {
   const num = Number(value);
@@ -48,6 +50,42 @@ const ensureItems = (items) => {
   return normalized;
 };
 
+const logAudit = async ({
+  req,
+  action,
+  entityType,
+  entityId,
+  before,
+  after,
+  message,
+}) => {
+  try {
+    const actorModel =
+      req.user?.role === "admin"
+        ? "Admin"
+        : req.user?.role === "doctor"
+        ? "Doctor"
+        : req.user?.role === "patient"
+        ? "Patient"
+        : null;
+
+    await AuditLog.create({
+      actorId: req.user?._id || null,
+      actorModel,
+      action,
+      entityType,
+      entityId,
+      before,
+      after,
+      message,
+      ip: req.ip,
+      userAgent: req.headers["user-agent"],
+    });
+  } catch {
+    // best-effort audit logging
+  }
+};
+
 /* ===================== ADMIN ===================== */
 
 export const createInvoice = async (req, res, next) => {
@@ -82,20 +120,60 @@ export const createInvoice = async (req, res, next) => {
       issuedBy: req.user._id,
     });
 
+    await createInAppNotification({
+      title: "New Invoice",
+      body: `A new invoice of ${totals.total.toFixed(2)} ${invoice.currency} was created.`,
+      user: patientId,
+      role: "patient",
+      meta: { invoiceId: invoice._id },
+    });
+
+    await logAudit({
+      req,
+      action: "invoice.create",
+      entityType: "invoice",
+      entityId: invoice._id,
+      after: {
+        patientId: invoice.patientId,
+        total: invoice.total,
+        status: invoice.status,
+      },
+    });
+
     res.status(201).json({ success: true, data: invoice });
   } catch (err) {
     next(err);
   }
 };
 
-export const getAllInvoices = async (_req, res, next) => {
+export const getAllInvoices = async (req, res, next) => {
   try {
-    const invoices = await Invoice.find()
-      .populate("patientId", "name email")
-      .populate("appointmentId", "date time status")
-      .sort({ createdAt: -1 });
+    const { status, patient, page = 1, limit = 20 } = req.query;
+    const filter = {};
+    if (status) filter.status = status;
+    if (patient) filter.patientId = patient;
 
-    res.json({ success: true, data: invoices });
+    const pageNum = Math.max(Number(page) || 1, 1);
+    const limitNum = Math.min(Math.max(Number(limit) || 20, 1), 100);
+    const skip = (pageNum - 1) * limitNum;
+
+    const [total, invoices] = await Promise.all([
+      Invoice.countDocuments(filter),
+      Invoice.find(filter)
+        .populate("patientId", "name email")
+        .populate("appointmentId", "date time status")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limitNum),
+    ]);
+
+    res.json({
+      success: true,
+      data: invoices,
+      total,
+      page: pageNum,
+      limit: limitNum,
+    });
   } catch (err) {
     next(err);
   }
@@ -115,6 +193,14 @@ export const updateInvoice = async (req, res, next) => {
     }
 
     const { items, taxRate, taxAmount, notes } = req.body;
+    const before = {
+      items: invoice.items,
+      subtotal: invoice.subtotal,
+      tax: invoice.tax,
+      total: invoice.total,
+      notes: invoice.notes,
+    };
+
     if (items !== undefined) {
       const normalizedItems = ensureItems(items);
       if (!normalizedItems) {
@@ -143,6 +229,20 @@ export const updateInvoice = async (req, res, next) => {
     invoice.total = totals.total;
 
     await invoice.save();
+
+    await logAudit({
+      req,
+      action: "invoice.update",
+      entityType: "invoice",
+      entityId: invoice._id,
+      before,
+      after: {
+        subtotal: invoice.subtotal,
+        tax: invoice.tax,
+        total: invoice.total,
+        notes: invoice.notes,
+      },
+    });
     res.json({ success: true, data: invoice });
   } catch (err) {
     next(err);
@@ -156,8 +256,28 @@ export const voidInvoice = async (req, res, next) => {
       return res.status(404).json({ message: "Invoice not found" });
     }
 
+    const before = {
+      status: invoice.status,
+    };
     invoice.status = "void";
     await invoice.save();
+
+    await createInAppNotification({
+      title: "Invoice Voided",
+      body: "Your invoice has been voided.",
+      user: invoice.patientId,
+      role: "patient",
+      meta: { invoiceId: invoice._id },
+    });
+
+    await logAudit({
+      req,
+      action: "invoice.void",
+      entityType: "invoice",
+      entityId: invoice._id,
+      before,
+      after: { status: invoice.status },
+    });
 
     res.json({ success: true, data: invoice });
   } catch (err) {
@@ -169,11 +289,22 @@ export const voidInvoice = async (req, res, next) => {
 
 export const getMyInvoices = async (req, res, next) => {
   try {
-    const invoices = await Invoice.find({ patientId: req.user._id })
-      .populate("appointmentId", "date time status")
-      .sort({ createdAt: -1 });
+    const { page = 1, limit = 20 } = req.query;
+    const filter = { patientId: req.user._id };
+    const pageNum = Math.max(Number(page) || 1, 1);
+    const limitNum = Math.min(Math.max(Number(limit) || 20, 1), 100);
+    const skip = (pageNum - 1) * limitNum;
 
-    res.json({ success: true, data: invoices });
+    const [total, invoices] = await Promise.all([
+      Invoice.countDocuments(filter),
+      Invoice.find(filter)
+        .populate("appointmentId", "date time status")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limitNum),
+    ]);
+
+    res.json({ success: true, data: invoices, total, page: pageNum, limit: limitNum });
   } catch (err) {
     next(err);
   }
@@ -222,10 +353,45 @@ export const payInvoice = async (req, res, next) => {
         .json({ message: "Only unpaid invoices can be paid" });
     }
 
+    const { paymentMethod, transactionId } = req.body || {};
+
+    const before = {
+      status: invoice.status,
+      paidAt: invoice.paidAt,
+      paidBy: invoice.paidBy,
+      paymentMethod: invoice.paymentMethod,
+      transactionId: invoice.transactionId,
+    };
+
     invoice.status = "paid";
     invoice.paidAt = new Date();
     invoice.paidBy = req.user._id;
+    if (paymentMethod) invoice.paymentMethod = paymentMethod;
+    if (transactionId) invoice.transactionId = transactionId;
     await invoice.save();
+
+    await createInAppNotification({
+      title: "Invoice Paid",
+      body: "Your invoice payment was recorded.",
+      user: invoice.patientId,
+      role: "patient",
+      meta: { invoiceId: invoice._id },
+    });
+
+    await logAudit({
+      req,
+      action: "invoice.pay",
+      entityType: "invoice",
+      entityId: invoice._id,
+      before,
+      after: {
+        status: invoice.status,
+        paidAt: invoice.paidAt,
+        paidBy: invoice.paidBy,
+        paymentMethod: invoice.paymentMethod,
+        transactionId: invoice.transactionId,
+      },
+    });
 
     res.json({ success: true, data: invoice });
   } catch (err) {

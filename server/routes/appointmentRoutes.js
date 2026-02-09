@@ -9,6 +9,7 @@ import {
   assignDoctor,
   rescheduleAppointment,
   cancelAppointment,
+  getDoctorAvailability,
 } from "../controllers/appointmentController.js";
 
 import { protect, allowRoles } from "../middleware/authMiddleware.js";
@@ -18,6 +19,7 @@ const router = express.Router();
 // patient
 router.post("/", protect, allowRoles("patient"), createAppointment);
 router.get("/mine", protect, allowRoles("patient"), getMyAppointments);
+router.get("/availability", protect, allowRoles("patient"), getDoctorAvailability);
 router.patch(
   "/:id/reschedule",
   protect,

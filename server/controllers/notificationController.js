@@ -28,11 +28,23 @@ export const getNotifications = async (req, res) => {
     // if not admin, restrict to user or role==user.role
     if (req.user.role !== "admin") {
       // user sees their own or by role
-      filter.$or = [{ user: req.user.id }, { role: req.user.role }];
+      filter.$or = [{ user: req.user._id }, { role: req.user.role }];
     }
 
-    const notes = await Notification.find(filter).sort({ createdAt: -1 });
-    res.json({ success: true, data: notes });
+    const { page = 1, limit = 20 } = req.query;
+    const pageNum = Math.max(Number(page) || 1, 1);
+    const limitNum = Math.min(Math.max(Number(limit) || 20, 1), 100);
+    const skip = (pageNum - 1) * limitNum;
+
+    const [total, notes] = await Promise.all([
+      Notification.countDocuments(filter),
+      Notification.find(filter)
+        .sort({ createdAt: -1 })
+        .populate("user", "name email")
+        .skip(skip)
+        .limit(limitNum),
+    ]);
+    res.json({ success: true, data: notes, total, page: pageNum, limit: limitNum });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -43,7 +55,11 @@ export const getNotifications = async (req, res) => {
  */
 export const markAsRead = async (req, res) => {
   try {
-    const note = await Notification.findByIdAndUpdate(req.params.id, { read: true }, { new: true });
+    const note = await Notification.findByIdAndUpdate(
+      req.params.id,
+      { read: true },
+      { new: true }
+    );
     if (!note) return res.status(404).json({ success: false, message: "Not found" });
     res.json({ success: true, data: note });
   } catch (err) {

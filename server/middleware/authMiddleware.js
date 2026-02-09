@@ -1,5 +1,7 @@
 import jwt from "jsonwebtoken";
-import User from "../models/User.js";
+import Admin from "../models/Admin.js";
+import Doctor from "../models/Doctor.js";
+import Patient from "../models/Patient.js";
 
 export const protect = async (req, res, next) => {
   try {
@@ -12,7 +14,16 @@ export const protect = async (req, res, next) => {
     const token = auth.split(" ")[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    req.user = await User.findById(decoded.id).select("-password");
+    let model = null;
+    if (decoded.role === "admin") model = Admin;
+    if (decoded.role === "doctor") model = Doctor;
+    if (decoded.role === "patient") model = Patient;
+
+    if (!model) {
+      return res.status(401).json({ message: "Token invalid" });
+    }
+
+    req.user = await model.findById(decoded.id).select("-password");
     if (!req.user) {
       return res.status(401).json({ message: "User not found" });
     }

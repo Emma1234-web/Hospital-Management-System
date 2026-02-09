@@ -84,7 +84,7 @@ export default function MedicalRecords() {
         <form onSubmit={submit} className="space-y-3">
           <select name="patient" defaultValue={current?.patient?._id || ""} required className="w-full p-2 border rounded">
             <option value="">Select patient</option>
-            {patients.map(p => <option key={p._id} value={p._1}>{p.name}</option>)}
+            {patients.map(p => <option key={p._id} value={p._id}>{p.name}</option>)}
           </select>
 
           <select name="doctor" defaultValue={current?.doctor?._id || ""} required className="w-full p-2 border rounded">

@@ -1,4 +1,5 @@
 import Patient from "../models/Patient.js";
+import User from "../models/User.js";
 
 // CREATE (ADMIN)
 export const createPatient = async (req, res, next) => {
@@ -13,8 +14,57 @@ export const createPatient = async (req, res, next) => {
 // READ ALL (ADMIN / DOCTOR)
 export const getPatients = async (req, res, next) => {
   try {
-    const patients = await Patient.find();
-    res.status(200).json({ success: true, data: patients });
+    const { q, page = 1, limit = 20 } = req.query;
+    const [patientsCollection, usersCollection] = await Promise.all([
+      Patient.find(),
+      User.find({ role: "patient" }),
+    ]);
+
+    const byEmail = new Map();
+    for (const patient of patientsCollection) {
+      if (patient.email) byEmail.set(patient.email, patient);
+      else byEmail.set(String(patient._id), patient);
+    }
+
+    const merged = [...patientsCollection];
+    for (const user of usersCollection) {
+      const key = user.email || String(user._id);
+      if (byEmail.has(key)) continue;
+      merged.push({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        age: user.age,
+        gender: user.gender,
+        phone: user.phone,
+        address: user.address,
+        role: user.role,
+        source: "user",
+      });
+    }
+
+    let patients = merged;
+    if (q) {
+      const needle = q.toLowerCase();
+      patients = patients.filter(
+        (p) =>
+          p.name?.toLowerCase().includes(needle) ||
+          p.email?.toLowerCase().includes(needle)
+      );
+    }
+
+    const pageNum = Math.max(Number(page) || 1, 1);
+    const limitNum = Math.min(Math.max(Number(limit) || 20, 1), 100);
+    const start = (pageNum - 1) * limitNum;
+    const paged = patients.slice(start, start + limitNum);
+
+    res.status(200).json({
+      success: true,
+      data: paged,
+      total: patients.length,
+      page: pageNum,
+      limit: limitNum,
+    });
   } catch (err) {
     next(err);
   }
