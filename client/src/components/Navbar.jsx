@@ -1,57 +1,34 @@
 // client/src/components/Navbar.jsx
 import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import useAuth from "../hooks/useAuth";
 
 export default function Navbar() {
   const { user, logout } = useAuth();
   const [open, setOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownTimeoutRef = useRef(null);
   const navigate = useNavigate();
 
   return (
-    <header className="bg-white shadow sticky top-0 z-40">
+    <header className="bg-white/80 backdrop-blur border-b border-gray-200 sticky top-0 z-40">
       <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
         <Link to="/" className="text-2xl font-bold text-blue-600">
           Hospital
         </Link>
 
         <nav className="hidden md:flex gap-6 items-center">
-          <Link to="/" className="text-gray-700">
+          <Link to="/" className="nav-link">
             Home
           </Link>
           {user && (
-            <Link to="/appointments" className="text-gray-700">
+            <Link to="/appointments" className="nav-link">
               Appointments
             </Link>
           )}
           {user && user.role === "patient" && (
-            <Link to="/book-appointment" className="text-gray-700">
+            <Link to="/book-appointment" className="nav-link">
               Book
-            </Link>
-          )}
-          {user && (user.role === "admin" || user.role === "patient") && (
-            <Link to="/billing" className="text-gray-700">
-              Billing
-            </Link>
-          )}
-          {user && (
-            <Link to="/prescriptions" className="text-gray-700">
-              Prescriptions
-            </Link>
-          )}
-          {user && (
-            <Link to="/lab-results" className="text-gray-700">
-              Lab Results
-            </Link>
-          )}
-          {user && (
-            <Link to="/notifications" className="text-gray-700">
-              Notifications
-            </Link>
-          )}
-          {user && user.role === "admin" && (
-            <Link to="/audit-logs" className="text-gray-700">
-              Audit Logs
             </Link>
           )}
 
@@ -73,20 +50,103 @@ export default function Navbar() {
           ) : (
             <>
               {user.role === "admin" && (
-                <Link to="/admin-dashboard" className="text-gray-700">
+                <Link to="/admin-dashboard" className="nav-link">
                   Admin
                 </Link>
               )}
               {user.role === "doctor" && (
-                <Link to="/doctor-dashboard" className="text-gray-700">
+                <Link to="/doctor-dashboard" className="nav-link">
                   Doctor
                 </Link>
               )}
               {user.role === "patient" && (
-                <Link to="/patient-dashboard" className="text-gray-700">
+                <Link to="/patient-dashboard" className="nav-link">
                   Patient
                 </Link>
               )}
+
+              <div
+                className="relative"
+                onMouseEnter={() => {
+                  if (dropdownTimeoutRef.current) {
+                    clearTimeout(dropdownTimeoutRef.current);
+                  }
+                  setDropdownOpen(true);
+                }}
+                onMouseLeave={() => {
+                  dropdownTimeoutRef.current = setTimeout(() => {
+                    setDropdownOpen(false);
+                  }, 200);
+                }}
+              >
+                <button className="nav-pill flex items-center gap-1">
+                  More
+                  <span
+                    className={`text-xs transition-transform ${
+                      dropdownOpen ? "rotate-180" : "rotate-0"
+                    }`}
+                  >
+                    v
+                  </span>
+                </button>
+                {dropdownOpen && (
+                  <div
+                    className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50 animate-fadeIn"
+                    onMouseEnter={() => {
+                      if (dropdownTimeoutRef.current) {
+                        clearTimeout(dropdownTimeoutRef.current);
+                      }
+                      setDropdownOpen(true);
+                    }}
+                    onMouseLeave={() => {
+                      dropdownTimeoutRef.current = setTimeout(() => {
+                        setDropdownOpen(false);
+                      }, 200);
+                    }}
+                  >
+                    {(user.role === "admin" || user.role === "patient") && (
+                      <Link
+                        to="/billing"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        onClick={() => setDropdownOpen(false)}
+                      >
+                        Billing
+                      </Link>
+                    )}
+                    <Link
+                      to="/prescriptions"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      onClick={() => setDropdownOpen(false)}
+                    >
+                      Prescriptions
+                    </Link>
+                    <Link
+                      to="/lab-results"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      onClick={() => setDropdownOpen(false)}
+                    >
+                      Lab Results
+                    </Link>
+                    <Link
+                      to="/notifications"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      onClick={() => setDropdownOpen(false)}
+                    >
+                      Notifications
+                    </Link>
+                    {user.role === "admin" && (
+                      <Link
+                        to="/audit-logs"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        onClick={() => setDropdownOpen(false)}
+                      >
+                        Audit Logs
+                      </Link>
+                    )}
+                  </div>
+                )}
+              </div>
+
               <button
                 onClick={logout}
                 className="px-3 py-1 bg-red-500 text-white rounded"
@@ -97,7 +157,13 @@ export default function Navbar() {
           )}
         </nav>
 
-        <button className="md:hidden" onClick={() => setOpen(!open)}>
+        <button
+          className="md:hidden"
+          onClick={() => {
+            setOpen(!open);
+            setDropdownOpen(false);
+          }}
+        >
           {open ? "Close" : "Menu"}
         </button>
       </div>

@@ -48,8 +48,11 @@ export default function AuditLogs() {
   const totalPages = Math.max(Math.ceil(total / limit), 1);
 
   return (
-    <div className="p-5">
-      <h1 className="text-2xl font-bold mb-4">Audit Logs</h1>
+    <div className="space-y-6">
+      <div className="page-header">
+        <h1 className="page-title">Audit Logs</h1>
+        <p className="page-subtitle">Track system activity and record changes.</p>
+      </div>
 
       <ErrorBanner message={error} />
 
@@ -161,7 +164,7 @@ export default function AuditLogs() {
                   <td>
                     {log.actorId?.name || "System"}
                   </td>
-                  <td>{log.message || "—"}</td>
+                  <td>{log.message || "--"}</td>
                 </tr>
               ))}
             </tbody>

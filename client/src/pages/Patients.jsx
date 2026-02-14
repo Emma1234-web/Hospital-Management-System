@@ -117,9 +117,12 @@ export default function Patients() {
   };
 
   return (
-    <div className="p-5">
-      <div className="flex justify-between mb-4">
-        <h1 className="text-2xl font-bold">Patients</h1>
+    <div className="space-y-6">
+      <div className="page-header">
+        <h1 className="page-title">Patients</h1>
+        <p className="page-subtitle">Search, update, and manage patient records.</p>
+      </div>
+      <div className="flex justify-between">
         <button
           onClick={openAdd}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg"

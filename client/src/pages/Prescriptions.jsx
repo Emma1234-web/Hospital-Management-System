@@ -138,7 +138,7 @@ export default function Prescriptions() {
             )
             .join("")}
         </ul>
-        <p>Notes: ${p.notes || "—"}</p>
+        <p>Notes: ${p.notes || "--"}</p>
       </body>
       </html>
     `);
@@ -151,8 +151,11 @@ export default function Prescriptions() {
   const totalPages = Math.max(Math.ceil(total / 20), 1);
 
   return (
-    <div className="p-5">
-      <h1 className="text-2xl font-bold mb-4">Prescriptions</h1>
+    <div className="space-y-6">
+      <div className="page-header">
+        <h1 className="page-title">Prescriptions</h1>
+        <p className="page-subtitle">Create, refill, and review medication plans.</p>
+      </div>
 
       <ErrorBanner message={error} />
 
@@ -280,8 +283,8 @@ export default function Prescriptions() {
                       />
                     </td>
                   )}
-                  <td>{p.patientId?.name || "—"}</td>
-                  <td>{p.doctorId?.name || "—"}</td>
+                  <td>{p.patientId?.name || "--"}</td>
+                  <td>{p.doctorId?.name || "--"}</td>
                   <td className="capitalize">{p.status}</td>
                   <td>
                     {p.refillsUsed}/{p.refillsAllowed}

@@ -26,7 +26,7 @@ export default function Register() {
 
     try {
       await API.post("/auth/register", form);
-      toast.success("Registered — please login");
+      toast.success("Registered -- please login");
       navigate("/login");
     } catch (err) {
       toast.error(err.response?.data?.message || "Registration failed");

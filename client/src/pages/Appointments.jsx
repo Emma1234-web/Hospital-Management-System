@@ -56,11 +56,11 @@ export default function Appointments() {
   }, [user, statusFilter, dateFilter]);
 
   const renderPatient = (appointment) =>
-    appointment.patientId?.name || appointment.patient?.name || "—";
+    appointment.patientId?.name || appointment.patient?.name || "--";
   const renderDoctor = (appointment) =>
-    appointment.doctorId?.name || appointment.doctor?.name || "—";
+    appointment.doctorId?.name || appointment.doctor?.name || "--";
   const renderDuration = (appointment) =>
-    appointment.durationMinutes ? `${appointment.durationMinutes} min` : "—";
+    appointment.durationMinutes ? `${appointment.durationMinutes} min` : "--";
 
   const assignDoctor = async (appointmentId) => {
     try {
@@ -117,8 +117,11 @@ export default function Appointments() {
   };
 
   return (
-    <div className="p-5">
-      <h1 className="text-2xl font-bold mb-4">All Appointments</h1>
+    <div className="space-y-6">
+      <div className="page-header">
+        <h1 className="page-title">Appointments</h1>
+        <p className="page-subtitle">Manage scheduling, approvals, and assignments.</p>
+      </div>
 
       <ErrorBanner message={error} />
 
@@ -187,7 +190,7 @@ export default function Appointments() {
               )}
               <td>{renderPatient(a)}</td>
               <td>{renderDoctor(a)}</td>
-              <td>{a.reason || "—"}</td>
+              <td>{a.reason || "--"}</td>
               <td>{a.date}</td>
               <td>{a.time}</td>
               <td>{renderDuration(a)}</td>

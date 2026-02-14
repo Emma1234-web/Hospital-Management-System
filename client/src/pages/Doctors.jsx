@@ -226,9 +226,12 @@ export default function Doctors() {
   };
 
   return (
-    <div className="p-5">
-      <div className="flex justify-between mb-4">
-        <h1 className="text-2xl font-bold">Doctors</h1>
+    <div className="space-y-6">
+      <div className="page-header">
+        <h1 className="page-title">Doctors</h1>
+        <p className="page-subtitle">Manage availability, roles, and contact details.</p>
+      </div>
+      <div className="flex justify-between">
         <button onClick={openAdd} className="bg-blue-600 text-white px-4 py-2 rounded">
           + Add Doctor
         </button>

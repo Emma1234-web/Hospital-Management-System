@@ -24,8 +24,11 @@ export default function PatientDashboard() {
   }, [user]);
 
   return (
-    <div className="p-5">
-      <h1 className="text-2xl font-bold mb-4">Patient Dashboard</h1>
+    <div className="space-y-6">
+      <div className="page-header">
+        <h1 className="page-title">Patient Dashboard</h1>
+        <p className="page-subtitle">Track your upcoming visits and status.</p>
+      </div>
 
       <ErrorBanner message={error} />
 
@@ -37,14 +40,14 @@ export default function PatientDashboard() {
 
       <div className="grid gap-4">
         {appointments.map((a) => (
-          <div key={a._id} className="bg-white p-4 rounded shadow">
+          <div key={a._id} className="surface p-4">
             <div className="flex justify-between">
               <div>
                 <div className="font-semibold">
                   Doctor: {a.doctorId?.name || "Unassigned"}
                 </div>
                 <div className="text-sm text-gray-600">
-                  {a.date} • {a.time}
+                  {a.date} - {a.time}
                 </div>
               </div>
               <span className="capitalize">{a.status}</span>

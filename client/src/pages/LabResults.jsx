@@ -92,8 +92,11 @@ export default function LabResults() {
   const totalPages = Math.max(Math.ceil(total / 20), 1);
 
   return (
-    <div className="p-5">
-      <h1 className="text-2xl font-bold mb-4">Lab Results</h1>
+    <div className="space-y-6">
+      <div className="page-header">
+        <h1 className="page-title">Lab Results</h1>
+        <p className="page-subtitle">Upload, review, and share diagnostic results.</p>
+      </div>
 
       <ErrorBanner message={error} />
 
@@ -176,8 +179,8 @@ export default function LabResults() {
             <tbody>
               {results.map((r) => (
                 <tr key={r._id}>
-                  <td>{r.patientId?.name || "—"}</td>
-                  <td>{r.doctorId?.name || "—"}</td>
+                  <td>{r.patientId?.name || "--"}</td>
+                  <td>{r.doctorId?.name || "--"}</td>
                   <td>{r.testName}</td>
                   <td className="capitalize">{r.status}</td>
                   <td>
@@ -190,7 +193,7 @@ export default function LabResults() {
                         Download
                       </a>
                     ) : (
-                      r.resultText || "—"
+                      r.resultText || "--"
                     )}
                   </td>
                 </tr>

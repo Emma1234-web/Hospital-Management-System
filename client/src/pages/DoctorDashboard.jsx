@@ -26,8 +26,11 @@ export default function DoctorDashboard() {
   };
 
   return (
-    <div className="p-5">
-      <h1 className="text-2xl font-bold mb-4">My Appointments</h1>
+    <div className="space-y-6">
+      <div className="page-header">
+        <h1 className="page-title">Doctor Dashboard</h1>
+        <p className="page-subtitle">Review and respond to upcoming appointments.</p>
+      </div>
 
       <ErrorBanner message={error} />
 

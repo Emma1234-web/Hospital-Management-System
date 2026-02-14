@@ -1,34 +1,79 @@
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-body { font-family: Inter, system-ui, sans-serif; margin:0; padding:0; }
-.navbar { display:flex; justify-content:space-between; padding:12px 20px; background:#0369a1; color:white; }
-.navbar a { color:white; margin-left:12px; text-decoration:none; }
-.page { padding:20px; max-width:1000px; margin:24px auto; }
-.form input, .form select { display:block; width:100%; padding:8px; margin:8px 0; }
-.btn { margin-right:8px; display:inline-block; padding:8px 12px; background:#0369a1; color:#fff; text-decoration:none; border-radius:6px; }
-.logout-btn { background:#ef4444; color:white; border:none; padding:8px 12px; border-radius:6px; cursor:pointer; }
+:root {
+  --ink: #0b1b2a;
+  --muted: #5f6b7a;
+  --brand: #1f6feb;
+  --brand-2: #0ea5a4;
+  --surface: #ffffff;
+  --surface-2: #f3f5f8;
+  --ring: rgba(31, 111, 235, 0.2);
+}
 
+body {
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  margin: 0;
+  padding: 0;
+  color: var(--ink);
+  background:
+    radial-gradient(900px 380px at 10% -10%, rgba(14, 165, 164, 0.18), transparent 60%),
+    radial-gradient(900px 420px at 100% 0%, rgba(31, 111, 235, 0.16), transparent 60%),
+    #f6f7fb;
+}
+
+h1, h2, h3 {
+  font-family: "Fraunces", serif;
+  color: var(--ink);
+}
+
+a { text-decoration: none; }
 
 @keyframes fadeIn {
   from { opacity: 0; } to { opacity: 1; }
 }
-.animate-fadeIn { animation: fadeIn 0.8s ease-in-out; }
+.animate-fadeIn { animation: fadeIn 0.3s ease-in-out; }
 
 @keyframes slideUp {
-  from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; }
+  from { transform: translateY(14px); opacity: 0; } to { transform: translateY(0); opacity: 1; }
 }
-.animate-slideUp { animation: slideUp 0.8s ease-in-out; }
+.animate-slideUp { animation: slideUp 0.35s ease-in-out; }
 
-.button { @apply px-4 py-2 rounded font-semibold transition transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2; }
-.button-primary { @apply bg-blue-500 text-white hover:bg-blue-600 focus:ring-blue-500; }
-.button-secondary { @apply bg-gray-500 text-white hover:bg-gray-600 focus:ring-gray-500; }
-.button-danger { @apply bg-red-500 text-white hover:bg-red-600 focus:ring-red-500; }
+@layer components {
+  .app-shell { @apply min-h-screen; }
+  .page-shell { @apply max-w-6xl mx-auto px-4 py-8; }
+  .page-header { @apply flex flex-col gap-2 mb-6; }
+  .page-title { @apply text-3xl md:text-4xl; }
+  .page-subtitle { @apply text-sm md:text-base text-gray-600; }
 
-.card { @apply bg-white p-6 rounded-lg shadow-lg transition transform hover:scale-105; }
+  .surface { @apply bg-white border border-gray-200 rounded-2xl shadow-sm; }
+  .surface-soft { @apply bg-white/80 border border-gray-200 rounded-2xl shadow-sm; }
+  .card-grid { @apply grid gap-6 md:grid-cols-2 lg:grid-cols-3; }
+  .card { @apply surface p-6 transition hover:shadow-md; }
+  .stat-card { @apply surface p-5 flex flex-col gap-2; }
+  .stat-label { @apply text-xs uppercase tracking-wider text-gray-500; }
+  .stat-value { @apply text-2xl font-semibold; }
 
-body { @apply bg-gray-100 font-sans; }
+  .btn-primary { @apply bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700; }
+  .btn-secondary { @apply bg-white text-gray-700 px-4 py-2 rounded-lg border border-gray-200 hover:border-gray-300; }
+  .btn-ghost { @apply text-gray-600 hover:text-gray-900; }
+
+  .nav-link { @apply text-gray-700 hover:text-gray-900; }
+  .nav-pill { @apply text-gray-700 px-3 py-1 rounded-md border border-gray-200 hover:border-gray-300 hover:bg-gray-50; }
+}
+
+@layer components {
+  .table-shell { @apply bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden; }
+  .table-pro { @apply w-full text-sm text-gray-700; }
+  .table-pro thead { @apply bg-gray-50 text-gray-600 uppercase text-xs tracking-wider; }
+  .table-pro th { @apply px-4 py-3 font-semibold text-left border-b border-gray-200; }
+  .table-pro td { @apply px-4 py-3 border-b border-gray-100; }
+  .table-pro tbody tr { @apply hover:bg-gray-50 transition; }
+  .table-pro tbody tr:last-child td { @apply border-b-0; }
+}
 
 @layer components {
   .table-shell { @apply bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden; }

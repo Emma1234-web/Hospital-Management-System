@@ -57,8 +57,8 @@ export default function BookAppointment() {
   };
 
   return (
-    <div className="max-w-md bg-white p-4 rounded shadow">
-      <h2 className="text-xl font-bold mb-3">Book Appointment</h2>
+    <div className="surface p-6 max-w-lg">
+      <h2 className="text-2xl font-semibold mb-3">Book Appointment</h2>
 
       <select
         className="border p-2 w-full mb-2"

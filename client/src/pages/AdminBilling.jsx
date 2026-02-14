@@ -127,7 +127,7 @@ export default function AdminBilling() {
       <html><head><title>Invoice</title></head>
       <body>
         <h2>Invoice</h2>
-        <p>Patient: ${invoice.patientId?.name || "—"}</p>
+        <p>Patient: ${invoice.patientId?.name || "--"}</p>
         <p>Status: ${invoice.status}</p>
         <table border="1" cellspacing="0" cellpadding="6">
           <tr><th>Description</th><th>Qty</th><th>Unit Price</th></tr>
@@ -182,8 +182,11 @@ export default function AdminBilling() {
   };
 
   return (
-    <div className="p-5">
-      <h1 className="text-2xl font-bold mb-4">Billing (Admin)</h1>
+    <div className="space-y-6">
+      <div className="page-header">
+        <h1 className="page-title">Billing (Admin)</h1>
+        <p className="page-subtitle">Create invoices and track payment status.</p>
+      </div>
 
       <div className="bg-white p-4 rounded shadow mb-6">
         <h2 className="text-lg font-semibold mb-3">
@@ -340,14 +343,14 @@ export default function AdminBilling() {
                     />
                   </td>
                   <td>
-                    {invoice.patientId?.name || "—"}
+                    {invoice.patientId?.name || "--"}
                   </td>
                   <td>
                     {invoice.total?.toFixed(2)} {invoice.currency || "USD"}
                   </td>
                   <td className="capitalize">{invoice.status}</td>
                   <td>
-                    {invoice.paymentMethod || "—"}
+                    {invoice.paymentMethod || "--"}
                     {invoice.transactionId ? ` / ${invoice.transactionId}` : ""}
                   </td>
                   <td>

@@ -36,8 +36,11 @@ export default function Notifications() {
   };
 
   return (
-    <div className="p-5">
-      <h1 className="text-2xl font-bold mb-4">Notifications</h1>
+    <div className="space-y-6">
+      <div className="page-header">
+        <h1 className="page-title">Notifications</h1>
+        <p className="page-subtitle">Stay up to date with appointments and billing.</p>
+      </div>
       <ErrorBanner message={error} />
 
       {loading && <div>Loading...</div>}

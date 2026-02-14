@@ -27,7 +27,7 @@ export default function App() {
   return (
     <>
       <Navbar />
-      <div className="max-w-6xl mx-auto px-4 py-6">
+      <div className="page-shell">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
