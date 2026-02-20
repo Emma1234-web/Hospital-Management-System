@@ -1,8 +1,21 @@
 import useAuth from "../hooks/useAuth";
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import API from "../api/axios";
+import { ErrorBanner } from "../components/Feedback";
 
 export default function AdminDashboard() {
   const { user } = useAuth();
+  const [stats, setStats] = useState(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    API.get("/admin/stats")
+      .then((res) => setStats(res.data.data || null))
+      .catch((err) =>
+        setError(err?.response?.data?.message || "Failed to load dashboard stats")
+      );
+  }, []);
 
   return (
     <div className="space-y-8">
@@ -10,6 +23,35 @@ export default function AdminDashboard() {
         <h1 className="page-title">Admin Dashboard</h1>
         <p className="page-subtitle">Welcome back, {user?.name}</p>
       </div>
+
+      <ErrorBanner message={error} />
+
+      <section className="card-grid">
+        <div className="stat-card">
+          <div className="stat-label">Patients</div>
+          <div className="stat-value">{stats?.patients ?? "--"}</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-label">Doctors</div>
+          <div className="stat-value">{stats?.doctors ?? "--"}</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-label">Appointments</div>
+          <div className="stat-value">{stats?.appointments ?? "--"}</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-label">Pending Appointments</div>
+          <div className="stat-value">{stats?.pendingAppointments ?? "--"}</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-label">Unpaid Invoices</div>
+          <div className="stat-value">{stats?.unpaidInvoices ?? "--"}</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-label">Unread Notifications</div>
+          <div className="stat-value">{stats?.unreadNotifications ?? "--"}</div>
+        </div>
+      </section>
 
       <section className="card-grid">
         <div className="stat-card">

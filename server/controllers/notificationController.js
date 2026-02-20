@@ -27,7 +27,6 @@ export const getNotifications = async (req, res) => {
 
     // if not admin, restrict to user or role==user.role
     if (req.user.role !== "admin") {
-      // user sees their own or by role
       filter.$or = [{ user: req.user._id }, { role: req.user.role }];
     }
 
@@ -55,23 +54,44 @@ export const getNotifications = async (req, res) => {
  */
 export const markAsRead = async (req, res) => {
   try {
-    const note = await Notification.findByIdAndUpdate(
-      req.params.id,
-      { read: true },
-      { new: true }
-    );
-    if (!note) return res.status(404).json({ success: false, message: "Not found" });
+    const note = await Notification.findById(req.params.id);
+    if (!note) {
+      return res.status(404).json({ success: false, message: "Not found" });
+    }
+
+    if (
+      req.user.role !== "admin" &&
+      String(note.user || "") !== String(req.user._id) &&
+      note.role !== req.user.role
+    ) {
+      return res.status(403).json({ success: false, message: "Access denied" });
+    }
+
+    note.read = true;
+    await note.save();
+
     res.json({ success: true, data: note });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
 };
 
-
 export const deleteNotification = async (req, res) => {
   try {
-    const note = await Notification.findByIdAndDelete(req.params.id);
-    if (!note) return res.status(404).json({ success: false, message: "Not found" });
+    const note = await Notification.findById(req.params.id);
+    if (!note) {
+      return res.status(404).json({ success: false, message: "Not found" });
+    }
+
+    if (
+      req.user.role !== "admin" &&
+      String(note.user || "") !== String(req.user._id) &&
+      note.role !== req.user.role
+    ) {
+      return res.status(403).json({ success: false, message: "Access denied" });
+    }
+
+    await Notification.findByIdAndDelete(req.params.id);
     res.json({ success: true, message: "Deleted" });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });

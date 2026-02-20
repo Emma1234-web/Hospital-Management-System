@@ -1,5 +1,10 @@
 import Patient from "../models/Patient.js";
 import User from "../models/User.js";
+import Appointment from "../models/Appointment.js";
+import Invoice from "../models/Invoice.js";
+import Prescription from "../models/Prescription.js";
+import LabResult from "../models/LabResult.js";
+import Notification from "../models/Notification.js";
 
 // CREATE (ADMIN)
 export const createPatient = async (req, res, next) => {
@@ -99,6 +104,42 @@ export const deletePatient = async (req, res, next) => {
   try {
     await Patient.findByIdAndDelete(req.params.id);
     res.json({ success: true });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// DASHBOARD STATS (PATIENT)
+export const getPatientDashboardStats = async (req, res, next) => {
+  try {
+    const patientId = req.user._id;
+    const [appointments, upcoming, unpaidInvoices, prescriptions, labResults, unreadNotifications] =
+      await Promise.all([
+        Appointment.countDocuments({ patientId }),
+        Appointment.countDocuments({
+          patientId,
+          status: { $in: ["pending", "assigned", "approved"] },
+        }),
+        Invoice.countDocuments({ patientId, status: "unpaid" }),
+        Prescription.countDocuments({ patientId }),
+        LabResult.countDocuments({ patientId }),
+        Notification.countDocuments({
+          read: false,
+          $or: [{ user: patientId }, { role: "patient" }],
+        }),
+      ]);
+
+    res.json({
+      success: true,
+      data: {
+        appointments,
+        upcoming,
+        unpaidInvoices,
+        prescriptions,
+        labResults,
+        unreadNotifications,
+      },
+    });
   } catch (err) {
     next(err);
   }

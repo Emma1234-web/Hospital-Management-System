@@ -7,6 +7,7 @@ import { ErrorBanner, EmptyState } from "../components/Feedback";
 export default function PatientDashboard() {
   const { user } = useAuth();
   const [appointments, setAppointments] = useState([]);
+  const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -21,6 +22,13 @@ export default function PatientDashboard() {
         toast.error(message);
       })
       .finally(() => setLoading(false));
+
+    API.get("/patients/dashboard-stats")
+      .then((res) => setStats(res.data.data || null))
+      .catch((err) => {
+        const message = err?.response?.data?.message || "Failed to load dashboard stats";
+        setError(message);
+      });
   }, [user]);
 
   return (
@@ -31,6 +39,33 @@ export default function PatientDashboard() {
       </div>
 
       <ErrorBanner message={error} />
+
+      <section className="card-grid">
+        <div className="stat-card">
+          <div className="stat-label">Appointments</div>
+          <div className="stat-value">{stats?.appointments ?? "--"}</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-label">Upcoming</div>
+          <div className="stat-value">{stats?.upcoming ?? "--"}</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-label">Unpaid Invoices</div>
+          <div className="stat-value">{stats?.unpaidInvoices ?? "--"}</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-label">Prescriptions</div>
+          <div className="stat-value">{stats?.prescriptions ?? "--"}</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-label">Lab Results</div>
+          <div className="stat-value">{stats?.labResults ?? "--"}</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-label">Unread Notifications</div>
+          <div className="stat-value">{stats?.unreadNotifications ?? "--"}</div>
+        </div>
+      </section>
 
       {loading && <p>Loading...</p>}
 

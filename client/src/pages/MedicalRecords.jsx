@@ -80,7 +80,7 @@ export default function MedicalRecords() {
         ))}
       </div>
 
-      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={current ? "Edit Record" : "Add Record"}>
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={current ? "Edit Record" : "Add Record"}>
         <form onSubmit={submit} className="space-y-3">
           <select name="patient" defaultValue={current?.patient?._id || ""} required className="w-full p-2 border rounded">
             <option value="">Select patient</option>

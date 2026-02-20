@@ -5,6 +5,7 @@ import {
   getPatient,
   updatePatient,
   deletePatient,
+  getPatientDashboardStats,
 } from "../controllers/patientController.js";
 
 import { protect } from "../middleware/authMiddleware.js";
@@ -16,6 +17,7 @@ router.use(protect);
 
 router.post("/", allowRoles("admin"), createPatient);
 router.get("/", allowRoles("admin", "doctor"), getPatients);
+router.get("/dashboard-stats", allowRoles("patient"), getPatientDashboardStats);
 router.get("/:id", getPatient);
 router.put("/:id", allowRoles("admin"), updatePatient);
 router.delete("/:id", allowRoles("admin"), deletePatient);

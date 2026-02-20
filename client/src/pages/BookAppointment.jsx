@@ -14,6 +14,10 @@ export default function BookAppointment() {
     durationMinutes: 30
   });
 
+  const hasDateAndDoctor = Boolean(form.doctorId && form.date);
+  const availableSlots = slots.filter((slot) => !slot.booked);
+  const isChosenSlotAvailable = availableSlots.some((slot) => slot.time === form.time);
+
   useEffect(() => {
     API.get("/doctors", { params: { page: 1, limit: 200 } })
       .then((res) => setDoctors(res.data.data || []))
@@ -40,6 +44,7 @@ export default function BookAppointment() {
   };
 
   useEffect(() => {
+    setForm((prev) => ({ ...prev, time: "" }));
     loadAvailability(form.doctorId, form.date);
   }, [form.doctorId, form.date]);
 
@@ -49,10 +54,27 @@ export default function BookAppointment() {
         toast.error("Please fill all fields");
         return;
       }
+      if (!isChosenSlotAvailable) {
+        toast.error("Please select an available slot");
+        return;
+      }
       await API.post("/appointments", form);
       toast.success("Appointment booked");
+      setForm({
+        doctorId: "",
+        date: "",
+        time: "",
+        reason: "",
+        durationMinutes: 30,
+      });
+      setSlots([]);
     } catch (err) {
-      toast.error(err?.response?.data?.message || "Failed");
+      const message = err?.response?.data?.message || "Failed";
+      if (message === "You already have an appointment at this time") {
+        toast.error("You already have an appointment at this time. Choose another slot.");
+        return;
+      }
+      toast.error(message);
     }
   };
 
@@ -73,7 +95,12 @@ export default function BookAppointment() {
         ))}
       </select>
 
-      <input type="date" className="border p-2 w-full mb-2" onChange={e=>setForm({...form,date:e.target.value})} />
+      <input
+        type="date"
+        className="border p-2 w-full mb-2"
+        value={form.date}
+        onChange={e=>setForm({...form,date:e.target.value})}
+      />
       <input
         type="time"
         className="border p-2 w-full mb-2"
@@ -94,14 +121,23 @@ export default function BookAppointment() {
         className="border p-2 w-full mb-2"
         placeholder="Reason for visit"
         rows={3}
+        value={form.reason}
         onChange={e=>setForm({...form,reason:e.target.value})}
       />
 
       <div className="mb-3">
         <div className="text-sm font-semibold text-gray-700 mb-2">Availability</div>
         {loadingSlots && <div className="text-sm text-gray-500">Loading slots...</div>}
-        {!loadingSlots && slots.length === 0 && (
+        {!loadingSlots && !hasDateAndDoctor && (
           <div className="text-sm text-gray-500">Select doctor and date to see slots.</div>
+        )}
+        {!loadingSlots && hasDateAndDoctor && slots.length > 0 && availableSlots.length === 0 && (
+          <div className="text-sm text-red-600">No available slots for this date.</div>
+        )}
+        {!loadingSlots && hasDateAndDoctor && slots.length === 0 && (
+          <div className="text-sm text-red-600">
+            Doctor availability is not configured for this date.
+          </div>
         )}
         {!loadingSlots && slots.length > 0 && (
           <div className="grid grid-cols-3 gap-2">
